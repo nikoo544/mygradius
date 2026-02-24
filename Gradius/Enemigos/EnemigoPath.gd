@@ -10,6 +10,12 @@ extends PathFollow2D
 @export var explosion_escena: PackedScene
 @export var item_powerup: PackedScene # Opcional: arrastra tu PowerUp.tscn aquí
 
+func _ready():
+	# -- GAME FEEL: Pop-in effect --
+	scale = Vector2.ZERO
+	var tween = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "scale", Vector2.ONE, 0.3)
+
 func _process(delta):
 	# Movimiento constante por la curva
 	progress_ratio += velocidad * delta
@@ -20,13 +26,20 @@ func _process(delta):
 
 # Esta función la llama la BALA del jugador
 func morir():
-	# 1. Intentar dar XP al jugador
+	# -- GAME FEEL: Pequeña sacudida al morir --
+	Events.enemy_defeated.emit(puntos_xp)
+
 	var jugadores = get_tree().get_nodes_in_group("jugador")
 	if jugadores.size() > 0:
 		var jugador = jugadores[0]
-		if jugador.has_method("ganar_xp"):
-			jugador.ganar_xp(puntos_xp)
+		if jugador.has_method("sacudir_camara"):
+			jugador.sacudir_camara(4.0)
 	
+	# -- GAME FEEL: Hit Stop (opcional, muy breve) --
+	# Engine.time_scale = 0.05
+	# await get_tree().create_timer(0.02, true, false, true).timeout
+	# Engine.time_scale = 1.0
+
 	# 2. Probabilidad de soltar un item (10% de chance)
 	if item_powerup and randf() < 0.1:
 		var item = item_powerup.instantiate()
@@ -40,7 +53,18 @@ func morir():
 		# Aseguramos que la explosión se vea por encima
 		exp.z_index = 10 
 		get_tree().current_scene.add_child(exp)
+
 	Input.start_joy_vibration(0, 0.4, 0.4, 0.2) # Si usan mando
+
+	# Desactivamos colisión para evitar múltiples disparos
+	if has_node("Area2D"):
+		$Area2D.queue_free()
+
+	# -- GAME FEEL: Desaparecer con estilo --
+	var tween_muerte = create_tween()
+	tween_muerte.tween_property(self, "scale", Vector2.ZERO, 0.1)
+	await tween_muerte.finished
+
 	queue_free()
 
 # --- DETECCIÓN DE COLISIÓN ---

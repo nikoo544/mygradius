@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://b3hqeiy7c0y6a" path="res://img/blue-stars.png" id="6_3dxm6"]
 [ext_resource type="PackedScene" uid="uid://dg0i45a1u0e65" path="res://Gradius/Enemigos/FormacionEnemigos.tscn" id="7_trn2v"]
 [ext_resource type="Script" uid="uid://b4255q6q7h2ee" path="res://level_up_menu.gd" id="9_03owx"]
+[ext_resource type="Script" path="res://hud.gd" id="10_hud"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cm0pq"]
 size = Vector2(88, 1355.5)
@@ -85,6 +86,7 @@ scale = Vector2(2, 2)
 transform = Transform2D(2, 0, 0, 2, 0, 0)
 
 [node name="Control" type="Control" parent="CanvasLayer" unique_id=1277601693]
+script = ExtResource("10_hud")
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
@@ -114,37 +116,50 @@ offset_bottom = 292.0
 [node name="GameOverMenu" type="ColorRect" parent="CanvasLayer" unique_id=354956412]
 process_mode = 3
 visible = false
-offset_left = -1102.0
-offset_top = -598.0
-offset_right = 1095.0
-offset_bottom = 654.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(0, 0, 0, 0.58431375)
 
 [node name="Label" type="Label" parent="CanvasLayer/GameOverMenu" unique_id=1091283760]
-visible = false
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-text = "GAME OVER"
-
-[node name="Button" type="Button" parent="CanvasLayer/GameOverMenu" unique_id=215237639]
-visible = false
-layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
-text = "REINTENTAR"
-
-[node name="LevelUpMenu" type="ColorRect" parent="CanvasLayer" unique_id=760013494]
-process_mode = 3
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -319.5
-offset_top = -198.5
-offset_right = -319.5
-offset_bottom = -198.5
+offset_left = -46.5
+offset_top = -33.0
+offset_right = 46.5
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "GAME OVER"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="CanvasLayer/GameOverMenu" unique_id=215237639]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -49.5
+offset_top = 10.0
+offset_right = 49.5
+offset_bottom = 41.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "REINTENTAR"
+
+[node name="LevelUpMenu" type="ColorRect" parent="CanvasLayer" unique_id=760013494]
+process_mode = 3
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
@@ -154,18 +169,14 @@ script = ExtResource("9_03owx")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/LevelUpMenu" unique_id=924121945]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
+anchors_preset = 14
 anchor_top = 0.5
-anchor_right = 0.5
+anchor_right = 1.0
 anchor_bottom = 0.5
-offset_left = -154.5
-offset_top = -154.0
-offset_right = -154.5
-offset_bottom = -154.0
+offset_top = -75.0
+offset_bottom = 75.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.6, 0.6)
 theme_override_constants/separation = 20
 alignment = 1
 

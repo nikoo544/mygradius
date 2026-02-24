@@ -3,7 +3,6 @@ extends CharacterBody2D
 # --- Nodos y Escenas ---
 @export var bala_escena: PackedScene
 @export var explosion_escena: PackedScene
-@onready var level_up_menu := get_tree().root.find_child("LevelUpMenu", true, false)
 
 # --- Parámetros Base ---
 @export var velocidad_base := 350.0
@@ -39,12 +38,12 @@ var es_invulnerable := false
 var experiencia := 0
 var exp_siguiente_nivel := 100
 var nivel := 1
+var multiplicador_xp := 1.0
 
 # --- Referencias a la UI ---
-@onready var xp_bar := get_tree().root.find_child("XPBar", true, false)
-@onready var hp_bar := get_tree().root.find_child("HealthBar", true, false)
 
 func _ready():
+	Events.enemy_defeated.connect(ganar_xp)
 	# 1. Forzamos los valores base al arrancar
 	vida_actual = vida_max  # Esto debería ser 100
 	
@@ -53,9 +52,8 @@ func _ready():
 	print("DEBUG: Mi vida actual al iniciar es: ", vida_actual)
 
 	# 3. Configurar UI
-	if hp_bar:
-		hp_bar.max_value = vida_max
-		hp_bar.value = vida_actual
+	Events.hp_changed.emit(vida_actual, vida_max)
+	Events.xp_gained.emit(experiencia, exp_siguiente_nivel)
 	
 	actualizar_interfaz_xp()
 	velocidad_actual = velocidad_base
@@ -140,14 +138,20 @@ func cambiar_disparo() -> void:
 func disparar_tipo1() -> void:
 	# Disparo simple frontal (Tipo 1)
 	crear_bala(Vector2(20, 0))
+	# Pequeño recoil visual
+	var tween = create_tween()
+	tween.tween_property(self, "position:x", position.x - 3, 0.05)
+	tween.tween_property(self, "position:x", position.x, 0.05)
 
 func disparar_tipo2() -> void:
-	# Disparo secundario con recoil moderado y opciones de distribución
-	# Recoil visual
-	global_position.x -= 6
+	# Disparo secundario con recoil moderado
 	# Dos balas con ligero spread
 	crear_bala(Vector2(20, -8))
 	crear_bala(Vector2(20, 8))
+
+	var tween = create_tween()
+	tween.tween_property(self, "position:x", position.x - 7, 0.05)
+	tween.tween_property(self, "position:x", position.x, 0.05)
 	# Puedes agregar más efectos opcionales aquí
 
 func disparar_misil() -> void:
@@ -182,17 +186,23 @@ func crear_bala(offset: Vector2) -> void:
 
 # --- SISTEMA DE DAÑO Y MUERTE ---
 func recibir_danio(cantidad: int) -> void:
-	if es_invulnerable:
+	if es_invulnerable or vida_actual <= 0:
 		return
 	vida_actual -= cantidad
 	vida_actual = max(vida_actual, 0)
-	if hp_bar:
-		hp_bar.value = vida_actual
+
+	Events.hp_changed.emit(vida_actual, vida_max)
+
+	# -- GAME FEEL: Hit Flash --
+	var flash_tween = create_tween()
+	flash_tween.tween_property(self, "modulate", Color.RED, 0.05)
+	flash_tween.tween_property(self, "modulate", Color.WHITE, 0.05)
+
 	print("Vida restante: ", vida_actual)
 	if vida_actual <= 0:
 		morir_jugador()
 	else:
-		sacudir_camara(8.1)
+		sacudir_camara(12.0)
 		activar_invulnerabilidad()
 
 func activar_invulnerabilidad() -> void:
@@ -215,14 +225,14 @@ func morir_jugador() -> void:
 	visible = false
 	$CollisionShape2D.set_deferred("disabled", true)
 	print("¡GAME OVER!")
+	Events.player_died.emit()
 
 # --- SISTEMA DE PROGRESIÓN ---
 # En el script del Player (CharacterBody2D)
 func mejorar() -> void:
 	# Curamos 20 HP sin pasarnos del máximo
 	vida_actual = min(vida_actual + 20, vida_max)
-	if hp_bar:
-		hp_bar.value = vida_actual
+	Events.hp_changed.emit(vida_actual, vida_max)
 	
 	# Damos un empujón de XP
 	ganar_xp(30) 
@@ -235,36 +245,36 @@ func mejorar() -> void:
 	print("¡Power Up recogido! +Vida +XP")
 
 func ganar_xp(cantidad: int) -> void:
-	experiencia += cantidad
-	if xp_bar:
-		xp_bar.value = experiencia
+	var xp_final = int(cantidad * multiplicador_xp)
+	experiencia += xp_final
+	Events.xp_gained.emit(experiencia, exp_siguiente_nivel)
 	if experiencia >= exp_siguiente_nivel:
 		subir_nivel()
 
 func subir_nivel() -> void:
 	nivel += 1
 	experiencia -= exp_siguiente_nivel
-	exp_siguiente_nivel = int(exp_siguiente_nivel * 1.5)
+	# Ajuste de curva XP: Un poco más suave que 1.5
+	exp_siguiente_nivel = int(exp_siguiente_nivel * 1.3) + 25
+
 	actualizar_interfaz_xp()
+
 	get_tree().paused = true
-	if level_up_menu:
-		level_up_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		level_up_menu.visible = true
-		if level_up_menu.has_method("generar_opciones"):
-			level_up_menu.generar_opciones()
+	Events.level_up.emit(nivel)
 
 func actualizar_interfaz_xp() -> void:
-	if xp_bar:
-		xp_bar.max_value = exp_siguiente_nivel
-		xp_bar.value = experiencia
+	Events.xp_gained.emit(experiencia, exp_siguiente_nivel)
 
 
 func sacudir_camara(intensidad: float = 5.0):
 	var cam = get_viewport().get_camera_2d()
 	if cam:
-		var pos_original = cam.offset
-		var tween = create_tween()
-		for i in range(5):
+		# Cancelar cualquier shake previo si es posible
+		var tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+		for i in range(6):
 			var desplazar = Vector2(randf_range(-intensidad, intensidad), randf_range(-intensidad, intensidad))
-			tween.tween_property(cam, "offset", desplazar, 0.03)
-		tween.tween_property(cam, "offset", pos_original, 0.03)
+			tween.tween_property(cam, "offset", desplazar, 0.04)
+			intensidad *= 0.8 # Decaimiento de la intensidad
+
+		tween.tween_property(cam, "offset", Vector2.ZERO, 0.04)

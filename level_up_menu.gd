@@ -2,11 +2,13 @@ extends ColorRect
 
 # Lista de posibles mejoras (Adaptadas a tu nuevo script de Player)
 var pool_de_mejoras = [
-	{"nombre": "Motores Élite", "desc": "+50 Velocidad de Nave", "tipo": "vel"},
+	{"nombre": "Motores Élite", "desc": "+60 Velocidad de Nave", "tipo": "vel"},
 	{"nombre": "Cañón Secundario", "desc": "Activa Disparo en V\n(Múltiples proyectiles)", "tipo": "arma_tipo2"},
 	{"nombre": "Lanzamisiles", "desc": "Activa proyectiles\npesados y lentos", "tipo": "arma_misil"},
-	{"nombre": "Placas de Titanio", "desc": "+30 Vida Máx y cura 20 HP", "tipo": "vida"},
-	{"nombre": "Sobrecarga Eléctrica", "desc": "+15% Velocidad de disparo\npara todas las armas", "tipo": "cadencia"}
+	{"nombre": "Placas de Titanio", "desc": "+40 Vida Máx y cura 20 HP", "tipo": "vida"},
+	{"nombre": "Sobrecarga Eléctrica", "desc": "+20% Velocidad de disparo\npara todas las armas", "tipo": "cadencia"},
+	{"nombre": "Kit de Reparación", "desc": "Cura 50 HP", "tipo": "cura"},
+	{"nombre": "Mente Analítica", "desc": "+25% Experiencia ganada", "tipo": "multi_xp"}
 ]
 
 @onready var contenedor = $HBoxContainer 
@@ -15,6 +17,11 @@ func _ready():
 	# Nos aseguramos de que procese aunque el árbol esté pausado
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
+	Events.level_up.connect(_on_level_up)
+
+func _on_level_up(_level):
+	visible = true
+	generar_opciones()
 
 func generar_opciones():
 	# -- GAME FEEL: Animación de entrada del menú --
@@ -28,12 +35,21 @@ func generar_opciones():
 	for child in contenedor.get_children():
 		child.queue_free()
 	
+	var jugador = get_tree().get_first_node_in_group("jugador")
 	pool_de_mejoras.shuffle()
 	
-	var num_opciones = min(3, pool_de_mejoras.size())
+	var opciones_filtradas = []
+	for m in pool_de_mejoras:
+		if m["tipo"] == "arma_tipo2" and jugador.modo_disparo_actual == jugador.TipoDisparo.TIPO_2:
+			continue
+		if m["tipo"] == "arma_misil" and jugador.modo_disparo_actual == jugador.TipoDisparo.MISIL:
+			continue
+		opciones_filtradas.append(m)
+
+	var num_opciones = min(3, opciones_filtradas.size())
 	
 	for i in range(num_opciones):
-		var mejora = pool_de_mejoras[i]
+		var mejora = opciones_filtradas[i]
 		var boton = Button.new()
 		
 		# Configuramos el texto
@@ -75,18 +91,20 @@ func _aplicar_mejora(mejora):
 			# Cambiamos al misil del enum
 			jugador.modo_disparo_actual = jugador.TipoDisparo.MISIL
 		"vida": 
-			jugador.vida_max += 30
+			jugador.vida_max += 40
 			jugador.vida_actual = min(jugador.vida_actual + 20, jugador.vida_max) # Evita pasarse del máximo
 		"cadencia": 
 			# Aceleramos todas las armas principales
-			jugador.cadencia_disparo_tipo1 *= 0.85
-			jugador.cadencia_disparo_tipo2 *= 0.85
-			jugador.cadencia_misil *= 0.85
+			jugador.cadencia_disparo_tipo1 *= 0.80
+			jugador.cadencia_disparo_tipo2 *= 0.80
+			jugador.cadencia_misil *= 0.80
+		"cura":
+			jugador.vida_actual = min(jugador.vida_actual + 50, jugador.vida_max)
+		"multi_xp":
+			jugador.multiplicador_xp += 0.25
 	
-	# Actualizar UI
-	if jugador.hp_bar:
-		jugador.hp_bar.max_value = jugador.vida_max
-		jugador.hp_bar.value = jugador.vida_actual
+	# Actualizar UI vía Eventos
+	Events.hp_changed.emit(jugador.vida_actual, jugador.vida_max)
 	
 	# -- GAME FEEL: Animación de salida antes de quitar la pausa --
 	var tween_salida = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
