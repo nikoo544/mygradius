@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dpyntxnypovgf"]
+
+[ext_resource type="Script" uid="uid://dtssal3ftyhru" path="res://Gradius/bullet.gd" id="1_o5fd3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_o5fd3"]
+size = Vector2(43.75, 43.5)
+
+[node name="Bullet" type="Area2D" unique_id=1317719263]
+script = ExtResource("1_o5fd3")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1532466487]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=184038176]
+position = Vector2(20.125, 19.75)
+shape = SubResource("RectangleShape2D_o5fd3")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]

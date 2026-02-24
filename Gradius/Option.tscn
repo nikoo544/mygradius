@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://fktrvqquowxr"]
+
+[ext_resource type="Script" uid="uid://cnc6g87v8rm3g" path="res://Gradius/option.gd" id="1_kmfbd"]
+
+[node name="Option" type="Node2D" unique_id=1917512173]
+script = ExtResource("1_kmfbd")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=500223272]
+offset_right = 40.0
+offset_bottom = 40.0
+color = Color(1, 1, 0, 1)

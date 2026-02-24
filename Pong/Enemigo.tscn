@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://bjrokd74pujp"]
+
+[ext_resource type="Script" uid="uid://46twj52l0b6f" path="res://Pong/enemigo.gd" id="1_usilb"]
+[ext_resource type="PackedScene" uid="uid://baqxtr8y04b5p" path="res://Gradius/PowerUp.tscn" id="2_sp4gd"]
+[ext_resource type="PackedScene" uid="uid://do80gjsnp0kot" path="res://Gradius/Particulas/Explosion.tscn" id="3_4tvpu"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p2sjk"]
+size = Vector2(58, 57)
+
+[node name="Enemigo" type="Area2D" unique_id=1796647854 groups=["enemigos"]]
+collision_layer = 3
+script = ExtResource("1_usilb")
+item_powerup = ExtResource("2_sp4gd")
+explosion_escena = ExtResource("3_4tvpu")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=2129195402]
+offset_right = 40.0
+offset_bottom = 40.0
+color = Color(0.7750257, 2.3102762e-06, 0.41100153, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1850483749]
+position = Vector2(19, 18.5)
+shape = SubResource("RectangleShape2D_p2sjk")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]

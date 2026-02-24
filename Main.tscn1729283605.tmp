@@ -1,0 +1,173 @@
+[gd_scene format=3 uid="uid://cmyxmqdjcmwb3"]
+
+[ext_resource type="Script" uid="uid://cvflnxl18wtc5" path="res://main.gd" id="1_r0du0"]
+[ext_resource type="PackedScene" uid="uid://cpsaxvvwqv80r" path="res://Gradius/Player.tscn" id="3_r0du0"]
+[ext_resource type="PackedScene" uid="uid://bjrokd74pujp" path="res://Pong/Enemigo.tscn" id="4_cm0pq"]
+[ext_resource type="PackedScene" uid="uid://baqxtr8y04b5p" path="res://Gradius/PowerUp.tscn" id="4_fos0i"]
+[ext_resource type="PackedScene" uid="uid://do80gjsnp0kot" path="res://Gradius/Particulas/Explosion.tscn" id="4_trn2v"]
+[ext_resource type="Texture2D" uid="uid://c017shx7rnlmg" path="res://img/blue-back.png" id="5_fos0i"]
+[ext_resource type="Texture2D" uid="uid://b3hqeiy7c0y6a" path="res://img/blue-stars.png" id="6_3dxm6"]
+[ext_resource type="PackedScene" uid="uid://dg0i45a1u0e65" path="res://Gradius/Enemigos/FormacionEnemigos.tscn" id="7_trn2v"]
+[ext_resource type="Script" uid="uid://b4255q6q7h2ee" path="res://level_up_menu.gd" id="9_03owx"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cm0pq"]
+size = Vector2(88, 1355.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fos0i"]
+size = Vector2(2921, 81)
+
+[node name="Main" type="Node2D" unique_id=212487968]
+script = ExtResource("1_r0du0")
+enemigo_escena = ExtResource("4_cm0pq")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1692384896]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=786992939]
+position = Vector2(-1242, 65)
+shape = SubResource("RectangleShape2D_cm0pq")
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D" unique_id=1894078844]
+position = Vector2(1395, 21)
+shape = SubResource("RectangleShape2D_cm0pq")
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D" unique_id=1662151828]
+position = Vector2(-46, -709)
+shape = SubResource("RectangleShape2D_fos0i")
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D" unique_id=593211986]
+position = Vector2(179, 796)
+shape = SubResource("RectangleShape2D_fos0i")
+
+[node name="SpawnTimer" type="Timer" parent="." unique_id=1728854941]
+autostart = true
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=712180714]
+position = Vector2(70, 47)
+scale = Vector2(9.718551, 6.31845)
+zoom = Vector2(0.5, 0.5)
+position_smoothing_enabled = true
+
+[node name="Player" parent="." unique_id=1000438231 groups=["jugador"] instance=ExtResource("3_r0du0")]
+position = Vector2(-813, -84)
+explosion_escena = ExtResource("4_trn2v")
+vida_max = 1
+
+[node name="PowerUp" parent="." unique_id=440221382 instance=ExtResource("4_fos0i")]
+position = Vector2(708, -87)
+
+[node name="FondoEstrellasCercanas" type="Parallax2D" parent="." unique_id=724737530]
+scroll_offset = Vector2(-1466, -9)
+repeat_size = Vector2(2000, 0)
+autoscroll = Vector2(-1500.065, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="FondoEstrellasCercanas" unique_id=1717889138]
+z_index = -1
+position = Vector2(242.25, -8)
+scale = Vector2(7.726103, 9.3625)
+texture = ExtResource("6_3dxm6")
+
+[node name="FondoEstrellasLejanas" type="Parallax2D" parent="." unique_id=74320461]
+z_index = -2
+scroll_offset = Vector2(-39, 19)
+repeat_size = Vector2(2500, 0)
+autoscroll = Vector2(-200, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="FondoEstrellasLejanas" unique_id=1153603669]
+position = Vector2(233, 36)
+scale = Vector2(9.371915, 10.286994)
+texture = ExtResource("5_fos0i")
+
+[node name="FormacionEnemigos" parent="." unique_id=1517817551 instance=ExtResource("7_trn2v")]
+position = Vector2(-319, -418)
+scale = Vector2(1.0305326, 1.0614369)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=420139250]
+scale = Vector2(2, 2)
+transform = Transform2D(2, 0, 0, 2, 0, 0)
+
+[node name="Control" type="Control" parent="CanvasLayer" unique_id=1277601693]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="XPBar" type="ProgressBar" parent="CanvasLayer/Control" unique_id=1644658794]
+layout_mode = 0
+offset_left = 528.0
+offset_top = 287.0
+offset_right = 532.0
+offset_bottom = 314.0
+
+[node name="HealthBar" type="ProgressBar" parent="CanvasLayer/Control" unique_id=179058588]
+layout_mode = 0
+offset_left = 432.5
+offset_top = 287.0
+offset_right = 436.5
+offset_bottom = 314.0
+
+[node name="Trinkets" type="Label" parent="CanvasLayer/Control" unique_id=727728238]
+layout_mode = 0
+offset_left = 335.0
+offset_top = 269.0
+offset_right = 375.0
+offset_bottom = 292.0
+
+[node name="GameOverMenu" type="ColorRect" parent="CanvasLayer" unique_id=354956412]
+process_mode = 3
+visible = false
+offset_left = -1102.0
+offset_top = -598.0
+offset_right = 1095.0
+offset_bottom = 654.0
+color = Color(0, 0, 0, 0.58431375)
+
+[node name="Label" type="Label" parent="CanvasLayer/GameOverMenu" unique_id=1091283760]
+visible = false
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "GAME OVER"
+
+[node name="Button" type="Button" parent="CanvasLayer/GameOverMenu" unique_id=215237639]
+visible = false
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+text = "REINTENTAR"
+
+[node name="LevelUpMenu" type="ColorRect" parent="CanvasLayer" unique_id=760013494]
+process_mode = 3
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -640.0
+offset_top = -360.0
+offset_right = -639.5
+offset_bottom = -359.5
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.5, 0.5)
+color = Color(0, 0, 0, 0.54901963)
+script = ExtResource("9_03owx")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/LevelUpMenu" unique_id=924121945]
+custom_minimum_size = Vector2(600, 200)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -100.0
+offset_right = 300.0
+offset_bottom = 100.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]

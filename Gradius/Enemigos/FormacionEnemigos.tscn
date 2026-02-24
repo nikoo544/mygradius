@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dg0i45a1u0e65"]
+
+[ext_resource type="Script" uid="uid://cr2vegou8tu5x" path="res://Gradius/Enemigos/formacion_enemigos.gd" id="1_iwryh"]
+[ext_resource type="PackedScene" uid="uid://bq5838gyh5h5f" path="res://Gradius/Enemigos/Enemigo.tscn" id="2_gkbs3"]
+
+[sub_resource type="Curve2D" id="Curve2D_a3una"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 932.2846, 27.805847, 0, 0, 0, 0, 877.7811, 33.957863, 0, 0, 0, 0, 599.186, 53.82673, 0, 0, 0, 0, 822.18677, 345.7683, -50.0456, -78.795204, 50.0456, 78.795204, 491.89316, 237.24219, -64.952805, -81.9896, 64.952805, 81.9896, 779.4099, 208.6827, 0, 0, 0, 0, 362.16, 131.88936, 0, 0, 0, 0, 330.60327, 299.43845, 0, 0, 0, 0, 838.31573, 393.3675, 0, 0, 0, 0, -81.737816, 402.25266)
+}
+point_count = 10
+
+[node name="FormacionEnemigos" type="Node2D" unique_id=1517817551]
+script = ExtResource("1_iwryh")
+enemigo_escena = ExtResource("2_gkbs3")
+
+[node name="Path2D" type="Path2D" parent="." unique_id=1779416700]
+position = Vector2(-19.441555, -32.8125)
+scale = Vector2(1.426004, 1.5756578)
+curve = SubResource("Curve2D_a3una")

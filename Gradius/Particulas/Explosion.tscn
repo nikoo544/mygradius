@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://do80gjsnp0kot"]
+
+[ext_resource type="Script" uid="uid://chuxtwmbi1vkc" path="res://Gradius/Particulas/explosion.gd" id="1_ijs8v"]
+
+[sub_resource type="Gradient" id="Gradient_3htnn"]
+offsets = PackedFloat32Array(0.022167487, 0.3916256, 0.9926108)
+colors = PackedColorArray(1, 0, 0, 1, 0.89213324, 0.40333992, 1.92523e-07, 1, 1, 1, 0, 1)
+
+[node name="Explosion" type="CPUParticles2D" unique_id=1984319874]
+emitting = false
+amount = 20
+one_shot = true
+explosiveness = 1.0
+emission_shape = 1
+emission_sphere_radius = 7.6
+direction = Vector2(0, 0)
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 282.54
+initial_velocity_max = 409.52
+scale_amount_min = 12.9
+scale_amount_max = 20.84
+color_ramp = SubResource("Gradient_3htnn")
+script = ExtResource("1_ijs8v")

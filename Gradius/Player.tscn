@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://cpsaxvvwqv80r"]
+
+[ext_resource type="Script" uid="uid://cum6i4cg2vroq" path="res://Gradius/player.gd" id="1_qfadh"]
+[ext_resource type="PackedScene" uid="uid://dpyntxnypovgf" path="res://Gradius/Bullet.tscn" id="2_f3yu6"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qfadh"]
+size = Vector2(126, 48)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_f3yu6"]
+size = Vector2(99, 31)
+
+[node name="Player" type="CharacterBody2D" unique_id=1000438231]
+collision_mask = 7
+script = ExtResource("1_qfadh")
+bala_escena = ExtResource("2_f3yu6")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=2061978949]
+offset_right = 104.0
+offset_bottom = 40.0
+color = Color(0.74413097, 0.00046763837, 0.7536527, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=538706531]
+position = Vector2(53, 20)
+shape = SubResource("RectangleShape2D_qfadh")
+
+[node name="hitbox" type="Area2D" parent="." unique_id=2027690763]
+position = Vector2(14, 20)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="hitbox" unique_id=246904034]
+position = Vector2(37, -1)
+shape = SubResource("RectangleShape2D_f3yu6")

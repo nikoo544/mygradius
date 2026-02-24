@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://mra8ie23lb8h"]
+
+[ext_resource type="Script" uid="uid://dj4614hry4sv5" path="res://Pong/jugador.gd" id="1_43k7d"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pfvk3"]
+size = Vector2(61, 189)
+
+[node name="Jugador" type="CharacterBody2D" unique_id=341109351]
+script = ExtResource("1_43k7d")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=356375615]
+offset_right = 40.0
+offset_bottom = 170.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=876395710]
+position = Vector2(20.5, 84.5)
+shape = SubResource("RectangleShape2D_pfvk3")
