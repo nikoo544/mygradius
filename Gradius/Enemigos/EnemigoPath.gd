@@ -88,12 +88,13 @@ func morir():
 func _on_area_2d_area_entered(area: Area2D) -> void:
 	var objeto = area.get_parent() 
 	
-	if objeto.has_method("recibir_danio"):
-		print("Impacto legal. Vida antes: ", objeto.vida_actual)
+	# Solo dañamos si es el jugador
+	if objeto.is_in_group("jugador") and objeto.has_method("recibir_danio"):
 		objeto.recibir_danio(daño_al_jugador)
 		
 		# EL TRUCO: Desactivamos la colisión inmediatamente para que no le de 2 veces
-		$Area2D.set_deferred("monitoring", false) 
-		$Area2D.set_deferred("monitorable", false)
+		if has_node("Area2D"):
+			$Area2D.set_deferred("monitoring", false)
+			$Area2D.set_deferred("monitorable", false)
 			
 		morir() # El enemigo desaparece tras el primer golpe

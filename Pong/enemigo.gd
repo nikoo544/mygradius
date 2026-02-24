@@ -30,7 +30,7 @@ func _on_area_entered(area):
 	if not target.is_in_group("jugador") and target.get_parent().is_in_group("jugador"):
 		target = target.get_parent()
 
-	if target.has_method("recibir_danio"):
+	if target.is_in_group("jugador") and target.has_method("recibir_danio"):
 		target.recibir_danio(20) # Quita 20 de vida
 		morir() # El enemigo explota al chocar
 
