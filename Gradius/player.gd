@@ -89,9 +89,9 @@ func _physics_process(delta: float) -> void:
 	modulate.v = 1.0 + (sin(Time.get_ticks_msec() * 0.01) * 0.1)
 
 	# 3. Límite de pantalla
-#	limitar_a_pantalla()
+	limitar_a_pantalla()
 
-func limtar_a_pantalla() -> void:
+func limitar_a_pantalla() -> void:
 	var camara := get_viewport().get_camera_2d()
 	if camara:
 		var tamaño_visible := get_viewport_rect().size / camara.zoom
