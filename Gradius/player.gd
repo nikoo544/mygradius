@@ -7,8 +7,8 @@ extends CharacterBody2D
 
 # --- Parámetros Base ---
 @export var velocidad_base := 850.0
-@export var aceleracion := 150.0
-@export var friccion := 150.0
+@export var aceleracion := 20.0
+@export var friccion := 25.0
 var velocidad_actual := 850.0
 
 # --- Sistema de Disparo ---
@@ -97,20 +97,7 @@ func _physics_process(delta: float) -> void:
 	# Efecto Retro: Modulación que cambia ligeramente
 	modulate.v = 1.0 + (sin(Time.get_ticks_msec() * 0.01) * 0.1)
 
-	# 3. Límite de pantalla
-	limitar_a_pantalla()
-
-func limitar_a_pantalla() -> void:
-	var camara := get_viewport().get_camera_2d()
-	if camara:
-		var tamaño_visible := get_viewport_rect().size / camara.zoom
-		var lim_izq := camara.global_position.x - (tamaño_visible.x / 2.0)
-		var lim_der := camara.global_position.x + (tamaño_visible.x / 2.0)
-		var lim_sup := camara.global_position.y - (tamaño_visible.y / 2.0)
-		var lim_inf := camara.global_position.y + (tamaño_visible.y / 2.0)
-		var margen := 30.0
-		global_position.x = clamp(global_position.x, lim_izq + margen, lim_der - margen)
-		global_position.y = clamp(global_position.y, lim_sup + margen, lim_inf - margen)
+	# 3. Límite de pantalla (Removido para estabilidad, usamos StaticBody2D walls)
 
 func _process(delta: float) -> void:
 	# Actualizar timers de disparo por tipo

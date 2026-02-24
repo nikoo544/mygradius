@@ -25,7 +25,9 @@ func spawn_drone():
 		get_tree().current_scene.add_child(drone)
 	else:
 		# Fallback: spawn a small kamikaze
-		var k = load("res://Gradius/Enemigos/EnemyKamikaze.tscn").instantiate()
+		var k_scene = load("res://Gradius/Enemigos/EnemyKamikaze.tscn")
+		if not k_scene: return
+		var k = k_scene.instantiate()
 		k.global_position = global_position + Vector2(-50, randf_range(-30, 30))
 		k.scale = Vector2(0.5, 0.5)
 		if "puntos_xp" in k: k.puntos_xp = 10
