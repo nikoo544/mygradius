@@ -1,4 +1,4 @@
-extends EnemyBase
+extends "res://Gradius/Enemigos/enemy_base.gd"
 
 var jugador: Node2D
 

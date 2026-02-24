@@ -1,4 +1,4 @@
-extends EnemyBase
+extends "res://Gradius/Enemigos/enemy_base.gd"
 
 @export var distancia_ataque = 500.0
 @export var multiplicador_dash = 3.5

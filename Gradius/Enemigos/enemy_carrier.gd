@@ -1,4 +1,4 @@
-extends EnemyBase
+extends "res://Gradius/Enemigos/enemy_base.gd"
 
 @export var drone_escena: PackedScene
 @export var intervalo_spawn = 4.0

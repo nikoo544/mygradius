@@ -1,4 +1,4 @@
-extends EnemyBase
+extends "res://Gradius/Enemigos/enemy_base.gd"
 
 @export var bala_escena: PackedScene
 @export var balas_por_burst = 12

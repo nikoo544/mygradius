@@ -1,4 +1,4 @@
-extends EnemyBase
+extends "res://Gradius/Enemigos/enemy_base.gd"
 
 @export var radio = 100.0
 @export var velocidad_giro = 4.0

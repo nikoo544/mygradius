@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyCarrier.tscn" id="15_carrier"]
 [ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyShielded.tscn" id="16_shielded"]
 [ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemySine.tscn" id="17_sine"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyZigZag.tscn" id="18_zigzag"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cm0pq"]
 size = Vector2(88, 1355.5)
@@ -27,7 +28,7 @@ size = Vector2(2921, 81)
 [node name="Main" type="Node2D" unique_id=212487968]
 script = ExtResource("1_r0du0")
 enemigo_escena = ExtResource("4_cm0pq")
-pool_enemigos = Array[PackedScene]([ExtResource("4_cm0pq"), ExtResource("11_kamikaze"), ExtResource("12_sniper"), ExtResource("13_burst"), ExtResource("14_orbiter"), ExtResource("15_carrier"), ExtResource("16_shielded"), ExtResource("17_sine")])
+pool_enemigos = Array[PackedScene]([ExtResource("4_cm0pq"), ExtResource("11_kamikaze"), ExtResource("12_sniper"), ExtResource("13_burst"), ExtResource("14_orbiter"), ExtResource("15_carrier"), ExtResource("16_shielded"), ExtResource("17_sine"), ExtResource("18_zigzag")])
 
 [node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1692384896]
 
