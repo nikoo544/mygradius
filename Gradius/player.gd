@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 # --- Nodos y Escenas ---
 @export var bala_escena: PackedScene
+@export var misil_escena: PackedScene
 @export var explosion_escena: PackedScene
 
 # --- Parámetros Base ---
@@ -29,10 +30,19 @@ var tiempo_misil := 0.0
 var tiempo_laser := 0.0
 var tiempo_proy_dirigido := 0.0
 
+# --- Retro Trail ---
+var trail_timer := 0.0
+@export var trail_interval := 0.05
+
 # --- Estadísticas y Vida ---
 @export var vida_max := 100
 var vida_actual := 100
 var es_invulnerable := false
+
+# --- Escudo ---
+var escudo_activo := false
+var vida_escudo := 0
+var vida_escudo_max := 50
 
 # --- Experiencia (Roguelite) ---
 var experiencia := 0
@@ -59,13 +69,24 @@ func _ready():
 	velocidad_actual = velocidad_base
 
 func _physics_process(delta: float) -> void:
+	# Retro Trail
+	trail_timer += delta
+	if trail_timer >= trail_interval:
+		crear_rastro()
+		trail_timer = 0.0
+
 	# 1. Movimiento
 	var direccion := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+
+	# Retro/Polybius Feel: Inclinación más agresiva y rastro
 	velocity = direccion * velocidad_actual
 	move_and_slide()
 
 	# 2. Inclinación visual
-	rotation = lerp(rotation, direccion.y * 0.15, 10 * delta)
+	rotation = lerp(rotation, direccion.y * 0.3, 10 * delta)
+
+	# Efecto Retro: Modulación que cambia ligeramente
+	modulate.v = 1.0 + (sin(Time.get_ticks_msec() * 0.01) * 0.1)
 
 	# 3. Límite de pantalla
 #	limitar_a_pantalla()
@@ -155,20 +176,38 @@ func disparar_tipo2() -> void:
 	# Puedes agregar más efectos opcionales aquí
 
 func disparar_misil() -> void:
-	# Misil guiado o inerte
-	# Un misil que podría ir recto y luego buscar objetivo
-	crear_bala(Vector2(20, 0))
-	# Si tienes una escena de misil distinta, podrías instanciarla aquí
-	# Ejemplo alternativo:
-	# if misil_escena:
-	#     var m = misil_escena.instantiate()
-	#     m.global_position = global_position + Vector2(20, 0)
-	#     get_tree().current_scene.add_child(m)
+	var m
+	if misil_escena:
+		m = misil_escena.instantiate()
+	else:
+		# Generamos un misil por código si no hay escena
+		m = Area2D.new()
+		m.set_script(load("res://Gradius/homing_missile.gd"))
+		# Añadir un visual simple (ColorRect)
+		var rect = ColorRect.new()
+		rect.size = Vector2(15, 5)
+		rect.position = -rect.size/2
+		rect.color = Color.ORANGE
+		m.add_child(rect)
+		# Añadir colisión
+		var col = CollisionShape2D.new()
+		var shape = RectangleShape2D.new()
+		shape.size = Vector2(15, 5)
+		col.shape = shape
+		m.add_child(col)
+
+	m.global_position = global_position + Vector2(25, 0)
+	m.rotation = rotation
+	get_tree().current_scene.add_child(m)
 
 func disparar_laser() -> void:
-	# Láser de pulso corto y alto daño
-	crear_bala(Vector2(20, 0))
-	# Podrías añadir un rayo visual o efecto de disparo láser
+	# Láser estilo retro: Muy rápido y brillante
+	for i in range(3):
+		var b = crear_bala(Vector2(30 + (i*20), 0))
+		if b:
+			b.modulate = Color.CYAN
+			b.scale = Vector2(2, 0.5)
+			if "velocidad" in b: b.velocidad *= 2.5
 
 func disparar_proy_dirigido() -> void:
 	# Proyectil dirigido: puede buscar objetivo o ir con guía básica
@@ -188,10 +227,25 @@ func crear_bala(offset: Vector2) -> void:
 func recibir_danio(cantidad: int) -> void:
 	if es_invulnerable or vida_actual <= 0:
 		return
+
+	# Manejo de escudo
+	if escudo_activo:
+		vida_escudo -= cantidad
+		sacudir_camara(5.0)
+		if vida_escudo <= 0:
+			escudo_activo = false
+			print("¡Escudo destruido!")
+			# Feedback visual de escudo roto
+			modulate = Color.WHITE
+		return
+
 	vida_actual -= cantidad
 	vida_actual = max(vida_actual, 0)
 
 	Events.hp_changed.emit(vida_actual, vida_max)
+
+	# Hit Stop!
+	Events.hit_stop(0.15)
 
 	# -- GAME FEEL: Hit Flash --
 	var flash_tween = create_tween()
@@ -265,6 +319,31 @@ func subir_nivel() -> void:
 func actualizar_interfaz_xp() -> void:
 	Events.xp_gained.emit(experiencia, exp_siguiente_nivel)
 
+
+func crear_rastro():
+	var ghost = Sprite2D.new()
+	# Intentar copiar la textura si el jugador tiene una
+	var sprite = get_node_or_null("Sprite2D")
+	if sprite:
+		ghost.texture = sprite.texture
+		ghost.scale = sprite.global_scale
+	else:
+		# Si no hay sprite, un rectángulo neón
+		ghost = ColorRect.new()
+		ghost.size = Vector2(40, 20)
+		ghost.position = -ghost.size/2
+		ghost.color = Color.CYAN
+
+	ghost.global_position = global_position
+	ghost.global_rotation = global_rotation
+	ghost.modulate = Color(0, 1, 1, 0.5)
+	ghost.z_index = z_index - 1
+	get_tree().current_scene.add_child(ghost)
+
+	var tween = create_tween()
+	tween.tween_property(ghost, "modulate:a", 0.0, 0.3)
+	tween.tween_property(ghost, "scale", Vector2.ZERO, 0.3)
+	tween.tween_callback(ghost.queue_free)
 
 func sacudir_camara(intensidad: float = 5.0):
 	var cam = get_viewport().get_camera_2d()

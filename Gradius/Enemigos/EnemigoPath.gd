@@ -24,10 +24,21 @@ func _process(delta):
 	if progress_ratio >= 1.0:
 		queue_free()
 
+func recibir_danio(cantidad):
+	vida -= cantidad
+	# Hit Flash
+	var tween = create_tween()
+	tween.tween_property(self, "modulate", Color.WHITE * 2.0, 0.05)
+	tween.tween_property(self, "modulate", Color.WHITE, 0.05)
+
+	if vida <= 0:
+		morir()
+
 # Esta función la llama la BALA del jugador
 func morir():
 	# -- GAME FEEL: Pequeña sacudida al morir --
 	Events.enemy_defeated.emit(puntos_xp)
+	Events.hit_stop(0.05)
 
 	var jugadores = get_tree().get_nodes_in_group("jugador")
 	if jugadores.size() > 0:

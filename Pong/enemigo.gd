@@ -41,12 +41,15 @@ func morir():
 		nuevo_item.global_position = global_position
 		get_tree().current_scene.add_child(nuevo_item)
 		
-	# 1. Buscar al jugador en el grupo para darle XP
+	# 1. Emitir señal de enemigo derrotado (El Player la escucha)
+	Events.enemy_defeated.emit(25)
+
+	# Sacudir cámara
 	var jugadores = get_tree().get_nodes_in_group("jugador")
 	if jugadores.size() > 0:
 		var jugador = jugadores[0]
-		jugador.ganar_xp(25) # Dale 25 de XP
-		print("XP entregada al jugador")
+		if jugador.has_method("sacudir_camara"):
+			jugador.sacudir_camara(4.0)
 
 	
 	queue_free()

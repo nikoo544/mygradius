@@ -1,14 +1,19 @@
 extends Node2D
 
-# Cargamos la escena del enemigo en memoria
-@export var enemigo_escena: PackedScene
+# Cargamos las escenas de los enemigos
+@export var pool_enemigos: Array[PackedScene] = []
+@export var enemigo_escena: PackedScene # Fallback
 var pantalla_ancho = get_viewport_rect().size.x
 func _ready():
 	Events.player_died.connect(mostrar_pantalla_game_over)
 
 func _on_spawn_timer_timeout():
-	if not enemigo_escena: return
-	var nuevo_enemigo = enemigo_escena.instantiate()
+	var escena_a_instanciar = enemigo_escena
+	if pool_enemigos.size() > 0:
+		escena_a_instanciar = pool_enemigos.pick_random()
+
+	if not escena_a_instanciar: return
+	var nuevo_enemigo = escena_a_instanciar.instantiate()
 	
 	# Conseguimos el ancho y alto de la pantalla
 	var ancho_pantalla = get_viewport_rect().size.x

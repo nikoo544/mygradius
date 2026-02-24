@@ -8,7 +8,8 @@ var pool_de_mejoras = [
 	{"nombre": "Placas de Titanio", "desc": "+40 Vida Máx y cura 20 HP", "tipo": "vida"},
 	{"nombre": "Sobrecarga Eléctrica", "desc": "+20% Velocidad de disparo\npara todas las armas", "tipo": "cadencia"},
 	{"nombre": "Kit de Reparación", "desc": "Cura 50 HP", "tipo": "cura"},
-	{"nombre": "Mente Analítica", "desc": "+25% Experiencia ganada", "tipo": "multi_xp"}
+	{"nombre": "Mente Analítica", "desc": "+25% Experiencia ganada", "tipo": "multi_xp"},
+	{"nombre": "Escudo de Energía", "desc": "Activa un escudo que\nabsorbe 50 de daño", "tipo": "escudo"}
 ]
 
 @onready var contenedor = $HBoxContainer 
@@ -36,13 +37,22 @@ func generar_opciones():
 		child.queue_free()
 	
 	var jugador = get_tree().get_first_node_in_group("jugador")
+	if not jugador:
+		visible = false
+		get_tree().paused = false
+		return
+
 	pool_de_mejoras.shuffle()
 	
 	var opciones_filtradas = []
 	for m in pool_de_mejoras:
-		if m["tipo"] == "arma_tipo2" and jugador.modo_disparo_actual == jugador.TipoDisparo.TIPO_2:
+		# Accedemos de forma segura a las propiedades del jugador
+		var modo_actual = jugador.get("modo_disparo_actual")
+
+		# Evitamos ofrecer mejoras que ya tenemos al máximo o activas
+		if m["tipo"] == "arma_tipo2" and modo_actual == 1: # TIPO_2
 			continue
-		if m["tipo"] == "arma_misil" and jugador.modo_disparo_actual == jugador.TipoDisparo.MISIL:
+		if m["tipo"] == "arma_misil" and modo_actual == 2: # MISIL
 			continue
 		opciones_filtradas.append(m)
 
@@ -102,6 +112,10 @@ func _aplicar_mejora(mejora):
 			jugador.vida_actual = min(jugador.vida_actual + 50, jugador.vida_max)
 		"multi_xp":
 			jugador.multiplicador_xp += 0.25
+		"escudo":
+			jugador.escudo_activo = true
+			jugador.vida_escudo = 50
+			jugador.modulate = Color.SKY_BLUE
 	
 	# Actualizar UI vía Eventos
 	Events.hp_changed.emit(jugador.vida_actual, jugador.vida_max)
