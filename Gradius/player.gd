@@ -6,8 +6,10 @@ extends CharacterBody2D
 @export var explosion_escena: PackedScene
 
 # --- Parámetros Base ---
-@export var velocidad_base := 350.0
-var velocidad_actual := 750.0
+@export var velocidad_base := 850.0
+@export var aceleracion := 150.0
+@export var friccion := 150.0
+var velocidad_actual := 850.0
 
 # --- Sistema de Disparo ---
 # Tipos de disparo
@@ -53,6 +55,9 @@ var multiplicador_xp := 1.0
 # --- Referencias a la UI ---
 
 func _ready():
+	# Aseguramos que la nave flote (para que no afecten rozamientos de suelo)
+	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+
 	Events.enemy_defeated.connect(ganar_xp)
 	# 1. Forzamos los valores base al arrancar
 	vida_actual = vida_max  # Esto debería ser 100
@@ -75,11 +80,15 @@ func _physics_process(delta: float) -> void:
 		crear_rastro()
 		trail_timer = 0.0
 
-	# 1. Movimiento
+	# 1. Movimiento con suavizado (Game Feel)
 	var direccion := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 
+	if direccion != Vector2.ZERO:
+		velocity = velocity.lerp(direccion * velocidad_actual, aceleracion * delta)
+	else:
+		velocity = velocity.lerp(Vector2.ZERO, friccion * delta)
+
 	# Retro/Polybius Feel: Inclinación más agresiva y rastro
-	velocity = direccion * velocidad_actual
 	move_and_slide()
 
 	# 2. Inclinación visual

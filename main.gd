@@ -15,17 +15,27 @@ func _on_spawn_timer_timeout():
 	if not escena_a_instanciar: return
 	var nuevo_enemigo = escena_a_instanciar.instantiate()
 	
-	# Conseguimos el ancho y alto de la pantalla
-	var ancho_pantalla = get_viewport_rect().size.x
-	var alto_pantalla = get_viewport_rect().size.y
+	# Conseguimos el viewport y la cámara
+	var viewport_rect = get_viewport_rect()
+	var cam = get_viewport().get_camera_2d()
 	
-	# Lo ponemos justo fuera de la pantalla a la derecha
-	# Y en una altura (Y) aleatoria
-	var pos_x = ancho_pantalla + 50
-	var pos_y = randf_range(50, alto_pantalla - 50)
+	var pos_x = 0.0
+	var pos_y = 0.0
 	
-	nuevo_enemigo.position = Vector2(pos_x, pos_y)
+	if cam:
+		var cam_pos = cam.global_position
+		var zoom = cam.zoom
+		var size = viewport_rect.size / zoom
+
+		# Spawneamos a la derecha de la cámara
+		pos_x = cam_pos.x + (size.x / 2.0) + 100
+		pos_y = cam_pos.y + randf_range(-size.y / 2.0 + 50, size.y / 2.0 - 50)
+	else:
+		# Fallback si no hay cámara
+		pos_x = viewport_rect.size.x + 100
+		pos_y = randf_range(50, viewport_rect.size.y - 50)
 	
+	nuevo_enemigo.global_position = Vector2(pos_x, pos_y)
 	add_child(nuevo_enemigo)
 	
 func mostrar_pantalla_game_over():

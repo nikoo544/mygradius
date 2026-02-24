@@ -10,6 +10,11 @@
 [ext_resource type="PackedScene" uid="uid://dg0i45a1u0e65" path="res://Gradius/Enemigos/FormacionEnemigos.tscn" id="7_trn2v"]
 [ext_resource type="Script" uid="uid://b4255q6q7h2ee" path="res://level_up_menu.gd" id="9_03owx"]
 [ext_resource type="Script" path="res://hud.gd" id="10_hud"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyKamikaze.tscn" id="11_kamikaze"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemySniper.tscn" id="12_sniper"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyBurst.tscn" id="13_burst"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyOrbiter.tscn" id="14_orbiter"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyCarrier.tscn" id="15_carrier"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cm0pq"]
 size = Vector2(88, 1355.5)
@@ -20,6 +25,7 @@ size = Vector2(2921, 81)
 [node name="Main" type="Node2D" unique_id=212487968]
 script = ExtResource("1_r0du0")
 enemigo_escena = ExtResource("4_cm0pq")
+pool_enemigos = Array[PackedScene]([ExtResource("4_cm0pq"), ExtResource("11_kamikaze"), ExtResource("12_sniper"), ExtResource("13_burst"), ExtResource("14_orbiter"), ExtResource("15_carrier")])
 
 [node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1692384896]
 
@@ -42,15 +48,13 @@ shape = SubResource("RectangleShape2D_fos0i")
 [node name="SpawnTimer" type="Timer" parent="." unique_id=1728854941]
 autostart = true
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=712180714]
-position = Vector2(70, 47)
-scale = Vector2(9.718551, 6.31845)
-zoom = Vector2(0.5, 0.5)
-position_smoothing_enabled = true
-
 [node name="Player" parent="." unique_id=1000438231 groups=["jugador"] instance=ExtResource("3_r0du0")]
 position = Vector2(-813, -84)
 explosion_escena = ExtResource("4_trn2v")
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=712180714]
+zoom = Vector2(0.7, 0.7)
+position_smoothing_enabled = true
 
 [node name="PowerUp" parent="." unique_id=440221382 instance=ExtResource("4_fos0i")]
 position = Vector2(708, -87)
@@ -94,17 +98,19 @@ offset_bottom = 40.0
 
 [node name="XPBar" type="ProgressBar" parent="CanvasLayer/Control" unique_id=1644658794]
 layout_mode = 0
-offset_left = 528.0
-offset_top = 287.0
-offset_right = 532.0
-offset_bottom = 314.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 320.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 
 [node name="HealthBar" type="ProgressBar" parent="CanvasLayer/Control" unique_id=179058588]
 layout_mode = 0
-offset_left = 432.5
-offset_top = 287.0
-offset_right = 436.5
-offset_bottom = 314.0
+offset_left = 20.0
+offset_top = 50.0
+offset_right = 320.0
+offset_bottom = 70.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 
 [node name="Trinkets" type="Label" parent="CanvasLayer/Control" unique_id=727728238]
 layout_mode = 0
