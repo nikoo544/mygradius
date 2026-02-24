@@ -19,6 +19,7 @@ func disparar():
 		bala.global_position = global_position
 		var direccion = (jugador.global_position - global_position).normalized()
 		bala.rotation = direccion.angle()
-		# Ajustar velocidad si la bala tiene esa propiedad
+		# Configurar bala enemiga
 		if "velocidad" in bala: bala.velocidad = 300
+		if "bando_objetivo" in bala: bala.bando_objetivo = "jugador"
 		get_tree().current_scene.add_child(bala)

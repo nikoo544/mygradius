@@ -6,10 +6,11 @@ extends CharacterBody2D
 @export var explosion_escena: PackedScene
 
 # --- Parámetros Base ---
-@export var velocidad_base := 850.0
-@export var aceleracion := 3000.0
-@export var friccion := 2500.0
-var velocidad_actual := 850.0
+@export var velocidad_base := 600.0
+@export var aceleracion := 1200.0
+@export var friccion := 800.0
+@export var velocidad_rotacion := 5.0
+var velocidad_actual := 600.0
 
 # --- Sistema de Disparo ---
 # Tipos de disparo
@@ -80,19 +81,23 @@ func _physics_process(delta: float) -> void:
 		crear_rastro()
 		trail_timer = 0.0
 
-	# 1. Movimiento con suavizado (Fix sugerido por Lead Programmer)
-	var direccion := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	# 1. Movimiento 360 (Thrust & Rotation)
+	var rot_input = Input.get_axis("ui_left", "ui_right")
+	rotation += rot_input * velocidad_rotacion * delta
 
-	var target_velocity = direccion * velocidad_actual
-	var accel_val = aceleracion if direccion != Vector2.ZERO else friccion
-	# Usamos move_toward para una aceleración lineal exacta y segura
-	velocity = velocity.move_toward(target_velocity, accel_val * delta)
+	var thrust_input = Input.get_axis("ui_down", "ui_up") # ui_up es positivo
+	var target_velocity = Vector2.RIGHT.rotated(rotation) * thrust_input * velocidad_actual
 
-	# Retro/Polybius Feel: Inclinación más agresiva y rastro
+	if thrust_input > 0:
+		velocity = velocity.move_toward(target_velocity, aceleracion * delta)
+		if has_node("ThrustParticles"): $ThrustParticles.emitting = true
+	else:
+		velocity = velocity.move_toward(target_velocity if thrust_input < 0 else Vector2.ZERO, friccion * delta)
+		if has_node("ThrustParticles"): $ThrustParticles.emitting = false
+
 	move_and_slide()
 
-	# 2. Inclinación visual
-	rotation = lerp(rotation, direccion.y * 0.3, 10 * delta)
+	# 2. Feedback Visual
 
 	# Efecto Retro: Modulación que cambia ligeramente
 	modulate.v = 1.0 + (sin(Time.get_ticks_msec() * 0.01) * 0.1)

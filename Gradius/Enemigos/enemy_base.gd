@@ -6,6 +6,7 @@ class_name EnemyBase
 @export var danio_al_jugador = 15
 @export var velocidad = 150.0
 @export var explosion_escena: PackedScene
+@export var drop_escena: PackedScene
 
 var es_invulnerable = false
 var esta_muerto = false
@@ -53,6 +54,13 @@ func morir():
 		exp.global_position = global_position
 		get_tree().current_scene.add_child(exp)
 
+	if drop_escena or randf() < 0.3: # 30% chance to drop points if not assigned, or always if assigned
+		var d_scene = drop_escena if drop_escena else load("res://Gradius/Points.tscn")
+		if d_scene:
+			var drop = d_scene.instantiate()
+			drop.global_position = global_position
+			get_tree().current_scene.add_child.call_deferred(drop)
+
 	# Pop-out and free
 	var tween = create_tween()
 	tween.tween_property(self, "scale", Vector2.ZERO, 0.1)
@@ -60,16 +68,19 @@ func morir():
 	queue_free()
 
 func _on_body_entered(body):
-	if esta_muerto: return
-	if body.is_in_group("jugador"):
-		if body.has_method("recibir_danio"):
-			body.recibir_danio(danio_al_jugador)
-		morir()
+	_handle_player_collision(body)
 
 func _on_area_entered(area):
+	_handle_player_collision(area)
+
+func _handle_player_collision(target):
 	if esta_muerto: return
-	var body = area.get_parent()
-	if body.is_in_group("jugador"):
-		if body.has_method("recibir_danio"):
-			body.recibir_danio(danio_al_jugador)
+
+	var final_target = target
+	if not final_target.is_in_group("jugador") and final_target.get_parent().is_in_group("jugador"):
+		final_target = final_target.get_parent()
+
+	if final_target.is_in_group("jugador"):
+		if final_target.has_method("recibir_danio"):
+			final_target.recibir_danio(danio_al_jugador)
 		morir()

@@ -86,11 +86,13 @@ func morir():
 # Conecta la señal "area_entered" de tu Area2D (hijo de este nodo) a esta función
 # --- DETECCIÓN DE COLISIÓN ---
 func _on_area_2d_area_entered(area: Area2D) -> void:
-	var objeto = area.get_parent() 
-	
+	var target = area
+	if not target.is_in_group("jugador") and target.get_parent().is_in_group("jugador"):
+		target = target.get_parent()
+
 	# Solo dañamos si es el jugador
-	if objeto.is_in_group("jugador") and objeto.has_method("recibir_danio"):
-		objeto.recibir_danio(daño_al_jugador)
+	if target.is_in_group("jugador") and target.has_method("recibir_danio"):
+		target.recibir_danio(daño_al_jugador)
 		
 		# EL TRUCO: Desactivamos la colisión inmediatamente para que no le de 2 veces
 		if has_node("Area2D"):

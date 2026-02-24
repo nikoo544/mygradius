@@ -35,6 +35,5 @@ func disparar_burst():
 			# Cambiar color para diferenciar disparos enemigos
 			b.modulate = Color.YELLOW
 			if "velocidad" in b: b.velocidad = 250
-			# Asegurar que la bala enemiga no dañe a otros enemigos
-			# (Depende de cómo esté configurado bullet.gd, pero por ahora lo soltamos)
+			if "bando_objetivo" in b: b.bando_objetivo = "jugador"
 			get_tree().current_scene.add_child(b)

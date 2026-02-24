@@ -4,8 +4,25 @@ extends Node2D
 @export var pool_enemigos: Array[PackedScene] = []
 @export var enemigo_escena: PackedScene # Fallback
 var pantalla_ancho = get_viewport_rect().size.x
+@export var boss_escena: PackedScene
+var boss_spawned = false
+
 func _ready():
 	Events.player_died.connect(mostrar_pantalla_game_over)
+	Events.level_up.connect(_on_level_up)
+
+func _on_level_up(nivel):
+	if nivel >= 5 and not boss_spawned:
+		spawn_boss()
+
+func spawn_boss():
+	if boss_escena:
+		boss_spawned = true
+		var boss = boss_escena.instantiate()
+		var cam = get_viewport().get_camera_2d()
+		if cam:
+			boss.global_position = cam.global_position + Vector2(1000, 0)
+		add_child(boss)
 
 func _on_spawn_timer_timeout():
 	var escena_a_instanciar = enemigo_escena

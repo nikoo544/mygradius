@@ -18,6 +18,8 @@
 [ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyShielded.tscn" id="16_shielded"]
 [ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemySine.tscn" id="17_sine"]
 [ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyZigZag.tscn" id="18_zigzag"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/Asteroid.tscn" id="19_asteroid"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyBoss.tscn" id="20_boss"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cm0pq"]
 size = Vector2(88, 1355.5)
@@ -28,25 +30,9 @@ size = Vector2(2921, 81)
 [node name="Main" type="Node2D" unique_id=212487968]
 script = ExtResource("1_r0du0")
 enemigo_escena = ExtResource("4_cm0pq")
-pool_enemigos = Array[PackedScene]([ExtResource("4_cm0pq"), ExtResource("11_kamikaze"), ExtResource("12_sniper"), ExtResource("13_burst"), ExtResource("14_orbiter"), ExtResource("15_carrier"), ExtResource("16_shielded"), ExtResource("17_sine"), ExtResource("18_zigzag")])
+pool_enemigos = Array[PackedScene]([ExtResource("4_cm0pq"), ExtResource("11_kamikaze"), ExtResource("12_sniper"), ExtResource("13_burst"), ExtResource("14_orbiter"), ExtResource("15_carrier"), ExtResource("16_shielded"), ExtResource("17_sine"), ExtResource("18_zigzag"), ExtResource("19_asteroid")])
+boss_escena = ExtResource("20_boss")
 
-[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1692384896]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=786992939]
-position = Vector2(-1242, 65)
-shape = SubResource("RectangleShape2D_cm0pq")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D" unique_id=1894078844]
-position = Vector2(1395, 21)
-shape = SubResource("RectangleShape2D_cm0pq")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D" unique_id=1662151828]
-position = Vector2(-46, -709)
-shape = SubResource("RectangleShape2D_fos0i")
-
-[node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D" unique_id=593211986]
-position = Vector2(179, 796)
-shape = SubResource("RectangleShape2D_fos0i")
 
 [node name="SpawnTimer" type="Timer" parent="." unique_id=1728854941]
 autostart = true
@@ -88,8 +74,6 @@ position = Vector2(-319, -418)
 scale = Vector2(1.0305326, 1.0614369)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=420139250]
-scale = Vector2(2, 2)
-transform = Transform2D(2, 0, 0, 2, 0, 0)
 
 [node name="Control" type="Control" parent="CanvasLayer" unique_id=1277601693]
 script = ExtResource("10_hud")
@@ -97,21 +81,22 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
+scale = Vector2(1.5, 1.5)
 
 [node name="XPBar" type="ProgressBar" parent="CanvasLayer/Control" unique_id=1644658794]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 320.0
-offset_bottom = 40.0
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 640.0
+offset_bottom = 80.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 
 [node name="HealthBar" type="ProgressBar" parent="CanvasLayer/Control" unique_id=179058588]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 50.0
-offset_right = 320.0
-offset_bottom = 70.0
+offset_left = 40.0
+offset_top = 100.0
+offset_right = 640.0
+offset_bottom = 140.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 
 [node name="Trinkets" type="Label" parent="CanvasLayer/Control" unique_id=727728238]
@@ -170,19 +155,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
 color = Color(0, 0, 0, 0.54901963)
 script = ExtResource("9_03owx")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/LevelUpMenu" unique_id=924121945]
 layout_mode = 1
-anchors_preset = 14
-anchor_top = 0.5
+anchors_preset = 15
 anchor_right = 1.0
-anchor_bottom = 0.5
-offset_top = -75.0
-offset_bottom = 75.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 20

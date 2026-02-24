@@ -25,10 +25,14 @@ func _on_level_up(_level):
 	generar_opciones()
 
 func generar_opciones():
+	# Asegurar que ocupe toda la pantalla
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	pivot_offset = size / 2.0
+
 	# -- GAME FEEL: Animación de entrada del menú --
 	scale = Vector2(0.8, 0.8) # Empieza un poco pequeño
 	modulate.a = 0.0 # Empieza transparente
-	var tween_menu = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	var tween_menu = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween_menu.tween_property(self, "scale", Vector2(1.0, 1.0), 0.3)
 	tween_menu.parallel().tween_property(self, "modulate:a", 1.0, 0.2)
 	
