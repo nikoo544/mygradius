@@ -183,10 +183,12 @@ func disparar_misil() -> void:
 		# Generamos un misil por código si no hay escena
 		m = Area2D.new()
 		m.set_script(load("res://Gradius/homing_missile.gd"))
-		# Añadir un visual simple (ColorRect)
-		var rect = ColorRect.new()
-		rect.size = Vector2(15, 5)
-		rect.position = -rect.size/2
+		# Añadir un visual simple (Polygon2D)
+		var rect = Polygon2D.new()
+		rect.polygon = PackedVector2Array([
+			Vector2(-7, -2), Vector2(7, -2),
+			Vector2(7, 2), Vector2(-7, 2)
+		])
 		rect.color = Color.ORANGE
 		m.add_child(rect)
 		# Añadir colisión
@@ -323,17 +325,21 @@ func actualizar_interfaz_xp() -> void:
 
 
 func crear_rastro():
-	var ghost = Sprite2D.new()
+	var ghost: Node2D
+
 	# Intentar copiar la textura si el jugador tiene una
 	var sprite = get_node_or_null("Sprite2D")
-	if sprite:
+	if sprite and sprite.texture:
+		ghost = Sprite2D.new()
 		ghost.texture = sprite.texture
 		ghost.scale = sprite.global_scale
 	else:
-		# Si no hay sprite, un rectángulo neón
-		ghost = ColorRect.new()
-		ghost.size = Vector2(40, 20)
-		ghost.position = -ghost.size/2
+		# Si no hay sprite, un polígono neón (Node2D) para evitar errores de rotación
+		ghost = Polygon2D.new()
+		ghost.polygon = PackedVector2Array([
+			Vector2(-20, -10), Vector2(20, -10),
+			Vector2(20, 10), Vector2(-20, 10)
+		])
 		ghost.color = Color.CYAN
 
 	ghost.global_position = global_position
