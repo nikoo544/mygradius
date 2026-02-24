@@ -5,6 +5,7 @@ extends PathFollow2D
 @export var vida = 1                 # Cuántos disparos aguanta
 @export var puntos_xp = 25           # Cuánta experiencia da al morir
 @export var daño_al_jugador = 1     # Cuánta vida le quita a la nave
+var esta_muerto = false
 
 @export_group("Recursos")
 @export var explosion_escena: PackedScene
@@ -36,6 +37,9 @@ func recibir_danio(cantidad):
 
 # Esta función la llama la BALA del jugador
 func morir():
+	if esta_muerto: return
+	esta_muerto = true
+
 	# -- GAME FEEL: Pequeña sacudida al morir --
 	Events.enemy_defeated.emit(puntos_xp)
 	Events.hit_stop(0.05)

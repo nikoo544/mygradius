@@ -3,7 +3,7 @@ extends Area2D
 @export var velocidad_avance = 200
 @export var item_powerup: PackedScene # Arrastra tu PowerUp.tscn aquí en el Inspector
 @export var explosion_escena: PackedScene # Arrastra Explosion.tscn aquí
-
+var esta_muerto = false
 
 func _ready() -> void:
 	if not body_entered.is_connected(_on_body_entered):
@@ -21,16 +21,27 @@ func _process(delta):
 func _on_body_entered(body):
 	if body.name == "Pelota":
 		# Si la pelota lo toca, el enemigo muere
-		queue_free()
+		morir()
 		# Opcional: podrías decirle a la pelota que rebote aquí también
 func _on_area_entered(area):
 	# Si el enemigo choca con la nave (suponiendo que la nave tiene un Area2D)
 	# o directamente con el cuerpo de la nave
-	var body = area.get_parent() 
-	if body.has_method("recibir_danio"):
-		body.recibir_danio(20) # Quita 20 de vida
+	var target = area
+	if not target.is_in_group("jugador") and target.get_parent().is_in_group("jugador"):
+		target = target.get_parent()
+
+	if target.has_method("recibir_danio"):
+		target.recibir_danio(20) # Quita 20 de vida
 		morir() # El enemigo explota al chocar
+
+func recibir_danio(_cantidad):
+	# En el Pong original morían de un golpe, pero para consistencia:
+	morir()
+
 func morir():
+	if esta_muerto: return
+	esta_muerto = true
+
 	# Aquí podrías añadir una explosión o sonido después
 	var exp = explosion_escena.instantiate()
 	exp.global_position = global_position

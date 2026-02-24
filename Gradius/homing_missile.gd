@@ -35,7 +35,10 @@ func _process(delta):
 	position += Vector2.RIGHT.rotated(rotation) * velocidad * delta
 
 func _on_area_entered(area):
-	var target = area.get_parent() if area.get_parent().is_in_group("enemigos") else area
+	var target = area
+	if not target.is_in_group("enemigos") and target.get_parent().is_in_group("enemigos"):
+		target = target.get_parent()
+
 	if target.is_in_group("enemigos"):
 		if target.has_method("recibir_danio"):
 			target.recibir_danio(danio)

@@ -8,9 +8,17 @@ class_name EnemyBase
 @export var explosion_escena: PackedScene
 
 var es_invulnerable = false
+var esta_muerto = false
 
 func _ready():
 	add_to_group("enemigos")
+
+	# Autoconectar señales si existen en el nodo (asumiendo que es un Area2D o RigidBody2D)
+	if has_signal("body_entered") and not body_entered.is_connected(_on_body_entered):
+		body_entered.connect(_on_body_entered)
+	if has_signal("area_entered") and not area_entered.is_connected(_on_area_entered):
+		area_entered.connect(_on_area_entered)
+
 	# Pop-in effect
 	scale = Vector2.ZERO
 	var tween = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -34,6 +42,9 @@ func recibir_danio(cantidad):
 		morir()
 
 func morir():
+	if esta_muerto: return
+	esta_muerto = true
+
 	Events.enemy_defeated.emit(puntos_xp)
 	Events.hit_stop(0.08)
 

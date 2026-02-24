@@ -214,14 +214,16 @@ func disparar_proy_dirigido() -> void:
 	crear_bala(Vector2(20, 0))
 	# Si implementas guía, podrías ajustar la bala para que busque al jugador más adelante
 
-func crear_bala(offset: Vector2) -> void:
+func crear_bala(offset: Vector2) -> Node2D:
 	if bala_escena:
 		var bala := bala_escena.instantiate()
 		bala.global_position = global_position + offset
 		# Por simplificación, no establecemos rotación especial aquí
 		get_tree().current_scene.add_child(bala)
+		return bala
 	else:
 		push_warning(" bala_escena no está asignada. No se puede disparar.")
+		return null
 
 # --- SISTEMA DE DAÑO Y MUERTE ---
 func recibir_danio(cantidad: int) -> void:
