@@ -1,4 +1,4 @@
-extends Node2D
+extends Area2D
 class_name EnemyBase
 
 @export var vida = 20
@@ -13,7 +13,7 @@ var esta_muerto = false
 func _ready():
 	add_to_group("enemigos")
 
-	# Autoconectar señales si existen en el nodo (asumiendo que es un Area2D o RigidBody2D)
+	# Autoconectar señales de colisión
 	if has_signal("body_entered") and not body_entered.is_connected(_on_body_entered):
 		body_entered.connect(_on_body_entered)
 	if has_signal("area_entered") and not area_entered.is_connected(_on_area_entered):
@@ -30,7 +30,7 @@ func setup_enemy():
 	pass # Override in subclasses
 
 func recibir_danio(cantidad):
-	if es_invulnerable: return
+	if es_invulnerable or esta_muerto: return
 	vida -= cantidad
 
 	# Flash effect
@@ -60,12 +60,14 @@ func morir():
 	queue_free()
 
 func _on_body_entered(body):
+	if esta_muerto: return
 	if body.is_in_group("jugador"):
 		if body.has_method("recibir_danio"):
 			body.recibir_danio(danio_al_jugador)
 		morir()
 
 func _on_area_entered(area):
+	if esta_muerto: return
 	var body = area.get_parent()
 	if body.is_in_group("jugador"):
 		if body.has_method("recibir_danio"):

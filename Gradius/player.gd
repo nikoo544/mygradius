@@ -7,8 +7,8 @@ extends CharacterBody2D
 
 # --- Parámetros Base ---
 @export var velocidad_base := 850.0
-@export var aceleracion := 150.0
-@export var friccion := 150.0
+@export var aceleracion := 3000.0
+@export var friccion := 2500.0
 var velocidad_actual := 850.0
 
 # --- Sistema de Disparo ---
@@ -80,12 +80,13 @@ func _physics_process(delta: float) -> void:
 		crear_rastro()
 		trail_timer = 0.0
 
-	# 1. Movimiento con suavizado corregido
+	# 1. Movimiento con suavizado (Fix sugerido por Lead Programmer)
 	var direccion := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 
-	# Usamos un lerp más robusto para evitar acumulaciones extrañas
 	var target_velocity = direccion * velocidad_actual
-	velocity = velocity.lerp(target_velocity, (aceleracion if direccion != Vector2.ZERO else friccion) * delta)
+	var accel_val = aceleracion if direccion != Vector2.ZERO else friccion
+	# Usamos move_toward para una aceleración lineal exacta y segura
+	velocity = velocity.move_toward(target_velocity, accel_val * delta)
 
 	# Retro/Polybius Feel: Inclinación más agresiva y rastro
 	move_and_slide()
