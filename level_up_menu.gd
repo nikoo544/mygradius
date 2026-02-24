@@ -98,12 +98,15 @@ func _aplicar_mejora(mejora):
 	match mejora["tipo"]:
 		"vel": 
 			jugador.velocidad_actual += 50
+			Events.speed_changed.emit(jugador.velocidad_actual)
 		"arma_tipo2": 
 			# Cambiamos al nuevo disparo del enum
 			jugador.modo_disparo_actual = jugador.TipoDisparo.TIPO_2
+			Events.weapon_switched.emit("TYPE 2 (SPREAD)")
 		"arma_misil": 
 			# Cambiamos al misil del enum
 			jugador.modo_disparo_actual = jugador.TipoDisparo.MISIL
+			Events.weapon_switched.emit("MISSILE")
 		"vida": 
 			jugador.vida_max += 40
 			jugador.vida_actual = min(jugador.vida_actual + 20, jugador.vida_max) # Evita pasarse del máximo

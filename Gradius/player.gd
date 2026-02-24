@@ -52,6 +52,7 @@ var experiencia := 0
 var exp_siguiente_nivel := 100
 var nivel := 1
 var multiplicador_xp := 1.0
+var score := 0
 
 # --- Referencias a la UI ---
 
@@ -59,7 +60,7 @@ func _ready():
 	# Aseguramos que la nave flote (para que no afecten rozamientos de suelo)
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 
-	Events.enemy_defeated.connect(ganar_xp)
+	Events.enemy_defeated.connect(_on_enemy_defeated)
 	# 1. Forzamos los valores base al arrancar
 	vida_actual = vida_max  # Esto debería ser 100
 	
@@ -148,32 +149,34 @@ func cambiar_disparo() -> void:
 	match modo_disparo_actual:
 		TipoDisparo.TIPO_1:
 			modo_disparo_actual = TipoDisparo.TIPO_2
-			print("Disparo cambiado: TIPO_2 (secundario)")
+			Events.weapon_switched.emit("TYPE 2 (SPREAD)")
 		TipoDisparo.TIPO_2:
 			modo_disparo_actual = TipoDisparo.TIPO_1
-			print("Disparo cambiado: TIPO_1 (principal)")
+			Events.weapon_switched.emit("TYPE 1 (CENTER)")
 		_:
 			# Si estás en un disparo especial, vuelve al principal al pulsar switch
 			modo_disparo_actual = TipoDisparo.TIPO_1
-			print("Disparo cambiado: TIPO_1 (principal)")
+			Events.weapon_switched.emit("TYPE 1 (CENTER)")
 
 func disparar_tipo1() -> void:
-	# Disparo simple frontal (Tipo 1)
-	crear_bala(Vector2(20, 0))
+	# Disparo simple frontal (Tipo 1) - Center
+	var pos = $Spawns/Center.global_position - global_position
+	crear_bala(pos)
 	# Pequeño recoil visual
 	var tween = create_tween()
-	tween.tween_property(self, "position:x", position.x - 3, 0.05)
-	tween.tween_property(self, "position:x", position.x, 0.05)
+	tween.tween_property(self, "position", position - Vector2.RIGHT.rotated(rotation) * 3, 0.05)
+	tween.tween_property(self, "position", position, 0.05)
 
 func disparar_tipo2() -> void:
-	# Disparo secundario con recoil moderado
-	# Dos balas con ligero spread
-	crear_bala(Vector2(20, -8))
-	crear_bala(Vector2(20, 8))
+	# Disparo secundario con recoil moderado - Wings
+	var pos_l = $Spawns/LeftWing.global_position - global_position
+	var pos_r = $Spawns/RightWing.global_position - global_position
+	crear_bala(pos_l)
+	crear_bala(pos_r)
 
 	var tween = create_tween()
-	tween.tween_property(self, "position:x", position.x - 7, 0.05)
-	tween.tween_property(self, "position:x", position.x, 0.05)
+	tween.tween_property(self, "position", position - Vector2.RIGHT.rotated(rotation) * 7, 0.05)
+	tween.tween_property(self, "position", position, 0.05)
 	# Puedes agregar más efectos opcionales aquí
 
 func disparar_misil() -> void:
@@ -199,29 +202,32 @@ func disparar_misil() -> void:
 		col.shape = shape
 		m.add_child(col)
 
-	m.global_position = global_position + Vector2(25, 0)
+	m.global_position = $Spawns/Center.global_position
 	m.rotation = rotation
 	get_tree().current_scene.add_child(m)
 
 func disparar_laser() -> void:
-	# Láser estilo retro: Muy rápido y brillante
-	for i in range(3):
-		var b = crear_bala(Vector2(30 + (i*20), 0))
-		if b:
-			b.modulate = Color.CYAN
-			b.scale = Vector2(2, 0.5)
-			if "velocidad" in b: b.velocidad *= 2.5
+	# Láser estilo retro: Muy rápido y brillante - From Wings
+	var pos_l = $Spawns/LeftWing.global_position - global_position
+	var pos_r = $Spawns/RightWing.global_position - global_position
+	for pos in [pos_l, pos_r]:
+		for i in range(3):
+			var b = crear_bala(pos + Vector2.RIGHT.rotated(rotation) * (i*40))
+			if b:
+				b.modulate = Color.CYAN
+				b.scale = Vector2(2, 0.5)
+				if "velocidad" in b: b.velocidad *= 2.5
 
 func disparar_proy_dirigido() -> void:
 	# Proyectil dirigido: puede buscar objetivo o ir con guía básica
-	crear_bala(Vector2(20, 0))
-	# Si implementas guía, podrías ajustar la bala para que busque al jugador más adelante
+	var pos = $Spawns/Center.global_position - global_position
+	crear_bala(pos)
 
 func crear_bala(offset: Vector2) -> Node2D:
 	if bala_escena:
 		var bala := bala_escena.instantiate()
 		bala.global_position = global_position + offset
-		# Por simplificación, no establecemos rotación especial aquí
+		bala.rotation = rotation
 		get_tree().current_scene.add_child(bala)
 		return bala
 	else:
@@ -303,7 +309,12 @@ func mejorar() -> void:
 	
 	print("¡Power Up recogido! +Vida +XP")
 
-func ganar_xp(cantidad: int) -> void:
+func _on_enemy_defeated(cantidad: int) -> void:
+	# Sumar score
+	score += cantidad * 10
+	Events.score_changed.emit(score)
+
+	# Ganar XP
 	var xp_final = int(cantidad * multiplicador_xp)
 	experiencia += xp_final
 	Events.xp_gained.emit(experiencia, exp_siguiente_nivel)

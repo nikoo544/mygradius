@@ -3,6 +3,11 @@ extends Area2D
 @export var velocidad = 800
 @export var danio = 10
 @export var bando_objetivo = "enemigos"
+@export var vida_util = 4.0
+
+func _ready():
+	await get_tree().create_timer(vida_util).timeout
+	queue_free()
 
 func _process(delta):
 	# Esto hace que la bala se mueva hacia donde "mira" (su eje X local)

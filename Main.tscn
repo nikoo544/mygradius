@@ -106,6 +106,73 @@ offset_top = 269.0
 offset_right = 375.0
 offset_bottom = 292.0
 
+[node name="BottomBar" type="Panel" parent="CanvasLayer"]
+custom_minimum_size = Vector2(0, 100)
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HBox" type="HBoxContainer" parent="CanvasLayer/BottomBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="AvatarSpace" type="Panel" parent="CanvasLayer/BottomBar/HBox"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="CanvasLayer/BottomBar/HBox/AvatarSpace"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "PILOT"
+horizontal_alignment = 1
+
+[node name="VBoxStats" type="VBoxContainer" parent="CanvasLayer/BottomBar/HBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="CanvasLayer/BottomBar/HBox/VBoxStats"]
+layout_mode = 2
+text = "SCORE: 0"
+
+[node name="SpeedLabel" type="Label" parent="CanvasLayer/BottomBar/HBox/VBoxStats"]
+layout_mode = 2
+text = "SPEED: 850"
+
+[node name="VBoxWeapon" type="VBoxContainer" parent="CanvasLayer/BottomBar/HBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="WeaponTitle" type="Label" parent="CanvasLayer/BottomBar/HBox/VBoxWeapon"]
+layout_mode = 2
+text = "ACTIVE WEAPON"
+horizontal_alignment = 1
+
+[node name="WeaponName" type="Label" parent="CanvasLayer/BottomBar/HBox/VBoxWeapon"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+text = "TYPE 1"
+horizontal_alignment = 1
+
 [node name="GameOverMenu" type="ColorRect" parent="CanvasLayer" unique_id=354956412]
 process_mode = 3
 visible = false

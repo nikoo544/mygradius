@@ -5,6 +5,9 @@ signal level_up(new_level)
 signal xp_gained(current_xp, next_level_xp)
 signal hp_changed(current_hp, max_hp)
 signal enemy_defeated(xp_value)
+signal score_changed(new_score)
+signal weapon_switched(weapon_name)
+signal speed_changed(new_speed)
 
 var _hit_stop_count = 0
 
