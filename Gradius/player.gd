@@ -2,12 +2,15 @@ extends CharacterBody2D
 
 # --- Nodos y Escenas ---
 @export var bala_escena: PackedScene
+@export var misil_escena: PackedScene
 @export var explosion_escena: PackedScene
-@onready var level_up_menu := get_tree().root.find_child("LevelUpMenu", true, false)
 
 # --- Parámetros Base ---
-@export var velocidad_base := 350.0
-var velocidad_actual := 750.0
+@export var velocidad_base := 600.0
+@export var aceleracion := 1200.0
+@export var friccion := 800.0
+@export var velocidad_rotacion := 5.0
+var velocidad_actual := 600.0
 
 # --- Sistema de Disparo ---
 # Tipos de disparo
@@ -30,21 +33,34 @@ var tiempo_misil := 0.0
 var tiempo_laser := 0.0
 var tiempo_proy_dirigido := 0.0
 
+# --- Retro Trail ---
+var trail_timer := 0.0
+@export var trail_interval := 0.05
+
 # --- Estadísticas y Vida ---
 @export var vida_max := 100
 var vida_actual := 100
 var es_invulnerable := false
 
+# --- Escudo ---
+var escudo_activo := false
+var vida_escudo := 0
+var vida_escudo_max := 50
+
 # --- Experiencia (Roguelite) ---
 var experiencia := 0
 var exp_siguiente_nivel := 100
 var nivel := 1
+var multiplicador_xp := 1.0
+var score := 0
 
 # --- Referencias a la UI ---
-@onready var xp_bar := get_tree().root.find_child("XPBar", true, false)
-@onready var hp_bar := get_tree().root.find_child("HealthBar", true, false)
 
 func _ready():
+	# Aseguramos que la nave flote (para que no afecten rozamientos de suelo)
+	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+
+	Events.enemy_defeated.connect(_on_enemy_defeated)
 	# 1. Forzamos los valores base al arrancar
 	vida_actual = vida_max  # Esto debería ser 100
 	
@@ -53,36 +69,41 @@ func _ready():
 	print("DEBUG: Mi vida actual al iniciar es: ", vida_actual)
 
 	# 3. Configurar UI
-	if hp_bar:
-		hp_bar.max_value = vida_max
-		hp_bar.value = vida_actual
+	Events.hp_changed.emit(vida_actual, vida_max)
+	Events.xp_gained.emit(experiencia, exp_siguiente_nivel)
 	
 	actualizar_interfaz_xp()
 	velocidad_actual = velocidad_base
 
 func _physics_process(delta: float) -> void:
-	# 1. Movimiento
-	var direccion := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-	velocity = direccion * velocidad_actual
+	# Retro Trail
+	trail_timer += delta
+	if trail_timer >= trail_interval:
+		crear_rastro()
+		trail_timer = 0.0
+
+	# 1. Movimiento 360 (Thrust & Rotation)
+	var rot_input = Input.get_axis("ui_left", "ui_right")
+	rotation += rot_input * velocidad_rotacion * delta
+
+	var thrust_input = Input.get_axis("ui_down", "ui_up") # ui_up es positivo
+	var target_velocity = Vector2.RIGHT.rotated(rotation) * thrust_input * velocidad_actual
+
+	if thrust_input > 0:
+		velocity = velocity.move_toward(target_velocity, aceleracion * delta)
+		if has_node("ThrustParticles"): $ThrustParticles.emitting = true
+	else:
+		velocity = velocity.move_toward(target_velocity if thrust_input < 0 else Vector2.ZERO, friccion * delta)
+		if has_node("ThrustParticles"): $ThrustParticles.emitting = false
+
 	move_and_slide()
 
-	# 2. Inclinación visual
-	rotation = lerp(rotation, direccion.y * 0.15, 10 * delta)
+	# 2. Feedback Visual
 
-	# 3. Límite de pantalla
-#	limitar_a_pantalla()
+	# Efecto Retro: Modulación que cambia ligeramente
+	modulate.v = 1.0 + (sin(Time.get_ticks_msec() * 0.01) * 0.1)
 
-func limtar_a_pantalla() -> void:
-	var camara := get_viewport().get_camera_2d()
-	if camara:
-		var tamaño_visible := get_viewport_rect().size / camara.zoom
-		var lim_izq := camara.global_position.x - (tamaño_visible.x / 2.0)
-		var lim_der := camara.global_position.x + (tamaño_visible.x / 2.0)
-		var lim_sup := camara.global_position.y - (tamaño_visible.y / 2.0)
-		var lim_inf := camara.global_position.y + (tamaño_visible.y / 2.0)
-		var margen := 30.0
-		global_position.x = clamp(global_position.x, lim_izq + margen, lim_der - margen)
-		global_position.y = clamp(global_position.y, lim_sup + margen, lim_inf - margen)
+	# 3. Límite de pantalla (Removido para estabilidad, usamos StaticBody2D walls)
 
 func _process(delta: float) -> void:
 	# Actualizar timers de disparo por tipo
@@ -128,71 +149,125 @@ func cambiar_disparo() -> void:
 	match modo_disparo_actual:
 		TipoDisparo.TIPO_1:
 			modo_disparo_actual = TipoDisparo.TIPO_2
-			print("Disparo cambiado: TIPO_2 (secundario)")
+			Events.weapon_switched.emit("TYPE 2 (SPREAD)")
 		TipoDisparo.TIPO_2:
 			modo_disparo_actual = TipoDisparo.TIPO_1
-			print("Disparo cambiado: TIPO_1 (principal)")
+			Events.weapon_switched.emit("TYPE 1 (CENTER)")
 		_:
 			# Si estás en un disparo especial, vuelve al principal al pulsar switch
 			modo_disparo_actual = TipoDisparo.TIPO_1
-			print("Disparo cambiado: TIPO_1 (principal)")
+			Events.weapon_switched.emit("TYPE 1 (CENTER)")
 
 func disparar_tipo1() -> void:
-	# Disparo simple frontal (Tipo 1)
-	crear_bala(Vector2(20, 0))
+	# Disparo simple frontal (Tipo 1) - Center
+	var pos = $Spawns/Center.global_position - global_position
+	crear_bala(pos)
+	# Pequeño recoil visual
+	var tween = create_tween()
+	tween.tween_property(self, "position", position - Vector2.RIGHT.rotated(rotation) * 3, 0.05)
+	tween.tween_property(self, "position", position, 0.05)
 
 func disparar_tipo2() -> void:
-	# Disparo secundario con recoil moderado y opciones de distribución
-	# Recoil visual
-	global_position.x -= 6
-	# Dos balas con ligero spread
-	crear_bala(Vector2(20, -8))
-	crear_bala(Vector2(20, 8))
+	# Disparo secundario con recoil moderado - Wings
+	var pos_l = $Spawns/LeftWing.global_position - global_position
+	var pos_r = $Spawns/RightWing.global_position - global_position
+	crear_bala(pos_l)
+	crear_bala(pos_r)
+
+	var tween = create_tween()
+	tween.tween_property(self, "position", position - Vector2.RIGHT.rotated(rotation) * 7, 0.05)
+	tween.tween_property(self, "position", position, 0.05)
 	# Puedes agregar más efectos opcionales aquí
 
 func disparar_misil() -> void:
-	# Misil guiado o inerte
-	# Un misil que podría ir recto y luego buscar objetivo
-	crear_bala(Vector2(20, 0))
-	# Si tienes una escena de misil distinta, podrías instanciarla aquí
-	# Ejemplo alternativo:
-	# if misil_escena:
-	#     var m = misil_escena.instantiate()
-	#     m.global_position = global_position + Vector2(20, 0)
-	#     get_tree().current_scene.add_child(m)
+	var m
+	if misil_escena:
+		m = misil_escena.instantiate()
+	else:
+		# Generamos un misil por código si no hay escena
+		m = Area2D.new()
+		m.set_script(load("res://Gradius/homing_missile.gd"))
+		# Añadir un visual simple (Polygon2D)
+		var rect = Polygon2D.new()
+		rect.polygon = PackedVector2Array([
+			Vector2(-7, -2), Vector2(7, -2),
+			Vector2(7, 2), Vector2(-7, 2)
+		])
+		rect.color = Color.ORANGE
+		m.add_child(rect)
+		# Añadir colisión
+		var col = CollisionShape2D.new()
+		var shape = RectangleShape2D.new()
+		shape.size = Vector2(15, 5)
+		col.shape = shape
+		m.add_child(col)
+
+	m.global_position = $Spawns/Center.global_position
+	m.rotation = rotation
+	get_tree().current_scene.add_child(m)
 
 func disparar_laser() -> void:
-	# Láser de pulso corto y alto daño
-	crear_bala(Vector2(20, 0))
-	# Podrías añadir un rayo visual o efecto de disparo láser
+	# Láser estilo retro: Muy rápido y brillante - From Wings
+	var pos_l = $Spawns/LeftWing.global_position - global_position
+	var pos_r = $Spawns/RightWing.global_position - global_position
+	for pos in [pos_l, pos_r]:
+		for i in range(3):
+			var b = crear_bala(pos + Vector2.RIGHT.rotated(rotation) * (i*40))
+			if b:
+				b.modulate = Color.CYAN
+				b.scale = Vector2(2, 0.5)
+				if "velocidad" in b: b.velocidad *= 2.5
 
 func disparar_proy_dirigido() -> void:
 	# Proyectil dirigido: puede buscar objetivo o ir con guía básica
-	crear_bala(Vector2(20, 0))
-	# Si implementas guía, podrías ajustar la bala para que busque al jugador más adelante
+	var pos = $Spawns/Center.global_position - global_position
+	crear_bala(pos)
 
-func crear_bala(offset: Vector2) -> void:
+func crear_bala(offset: Vector2) -> Node2D:
 	if bala_escena:
 		var bala := bala_escena.instantiate()
 		bala.global_position = global_position + offset
-		# Por simplificación, no establecemos rotación especial aquí
+		bala.rotation = rotation
 		get_tree().current_scene.add_child(bala)
+		return bala
 	else:
 		push_warning(" bala_escena no está asignada. No se puede disparar.")
+		return null
 
 # --- SISTEMA DE DAÑO Y MUERTE ---
 func recibir_danio(cantidad: int) -> void:
-	if es_invulnerable:
+	if es_invulnerable or vida_actual <= 0:
 		return
+
+	# Manejo de escudo
+	if escudo_activo:
+		vida_escudo -= cantidad
+		sacudir_camara(5.0)
+		if vida_escudo <= 0:
+			escudo_activo = false
+			print("¡Escudo destruido!")
+			# Feedback visual de escudo roto
+			modulate = Color.WHITE
+		return
+
 	vida_actual -= cantidad
 	vida_actual = max(vida_actual, 0)
-	if hp_bar:
-		hp_bar.value = vida_actual
+
+	Events.hp_changed.emit(vida_actual, vida_max)
+
+	# Hit Stop!
+	Events.hit_stop(0.15)
+
+	# -- GAME FEEL: Hit Flash --
+	var flash_tween = create_tween()
+	flash_tween.tween_property(self, "modulate", Color.RED, 0.05)
+	flash_tween.tween_property(self, "modulate", Color.WHITE, 0.05)
+
 	print("Vida restante: ", vida_actual)
 	if vida_actual <= 0:
 		morir_jugador()
 	else:
-		sacudir_camara(8.1)
+		sacudir_camara(12.0)
 		activar_invulnerabilidad()
 
 func activar_invulnerabilidad() -> void:
@@ -215,14 +290,14 @@ func morir_jugador() -> void:
 	visible = false
 	$CollisionShape2D.set_deferred("disabled", true)
 	print("¡GAME OVER!")
+	Events.player_died.emit()
 
 # --- SISTEMA DE PROGRESIÓN ---
 # En el script del Player (CharacterBody2D)
 func mejorar() -> void:
 	# Curamos 20 HP sin pasarnos del máximo
 	vida_actual = min(vida_actual + 20, vida_max)
-	if hp_bar:
-		hp_bar.value = vida_actual
+	Events.hp_changed.emit(vida_actual, vida_max)
 	
 	# Damos un empujón de XP
 	ganar_xp(30) 
@@ -234,37 +309,71 @@ func mejorar() -> void:
 	
 	print("¡Power Up recogido! +Vida +XP")
 
-func ganar_xp(cantidad: int) -> void:
-	experiencia += cantidad
-	if xp_bar:
-		xp_bar.value = experiencia
+func _on_enemy_defeated(cantidad: int) -> void:
+	# Sumar score
+	score += cantidad * 10
+	Events.score_changed.emit(score)
+
+	# Ganar XP
+	var xp_final = int(cantidad * multiplicador_xp)
+	experiencia += xp_final
+	Events.xp_gained.emit(experiencia, exp_siguiente_nivel)
 	if experiencia >= exp_siguiente_nivel:
 		subir_nivel()
 
 func subir_nivel() -> void:
 	nivel += 1
 	experiencia -= exp_siguiente_nivel
-	exp_siguiente_nivel = int(exp_siguiente_nivel * 1.5)
+	# Ajuste de curva XP: Un poco más suave que 1.5
+	exp_siguiente_nivel = int(exp_siguiente_nivel * 1.3) + 25
+
 	actualizar_interfaz_xp()
+
 	get_tree().paused = true
-	if level_up_menu:
-		level_up_menu.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		level_up_menu.visible = true
-		if level_up_menu.has_method("generar_opciones"):
-			level_up_menu.generar_opciones()
+	Events.level_up.emit(nivel)
 
 func actualizar_interfaz_xp() -> void:
-	if xp_bar:
-		xp_bar.max_value = exp_siguiente_nivel
-		xp_bar.value = experiencia
+	Events.xp_gained.emit(experiencia, exp_siguiente_nivel)
 
+
+func crear_rastro():
+	var ghost: Node2D
+
+	# Intentar copiar la textura si el jugador tiene una
+	var sprite = get_node_or_null("Sprite2D")
+	if sprite and sprite.texture:
+		ghost = Sprite2D.new()
+		ghost.texture = sprite.texture
+		ghost.scale = sprite.global_scale
+	else:
+		# Si no hay sprite, un polígono neón (Node2D) para evitar errores de rotación
+		ghost = Polygon2D.new()
+		ghost.polygon = PackedVector2Array([
+			Vector2(-20, -10), Vector2(20, -10),
+			Vector2(20, 10), Vector2(-20, 10)
+		])
+		ghost.color = Color.CYAN
+
+	ghost.global_position = global_position
+	ghost.global_rotation = global_rotation
+	ghost.modulate = Color(0, 1, 1, 0.5)
+	ghost.z_index = z_index - 1
+	get_tree().current_scene.add_child(ghost)
+
+	var tween = create_tween()
+	tween.tween_property(ghost, "modulate:a", 0.0, 0.3)
+	tween.tween_property(ghost, "scale", Vector2.ZERO, 0.3)
+	tween.tween_callback(ghost.queue_free)
 
 func sacudir_camara(intensidad: float = 5.0):
 	var cam = get_viewport().get_camera_2d()
 	if cam:
-		var pos_original = cam.offset
-		var tween = create_tween()
-		for i in range(5):
+		# Cancelar cualquier shake previo si es posible
+		var tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+		for i in range(6):
 			var desplazar = Vector2(randf_range(-intensidad, intensidad), randf_range(-intensidad, intensidad))
-			tween.tween_property(cam, "offset", desplazar, 0.03)
-		tween.tween_property(cam, "offset", pos_original, 0.03)
+			tween.tween_property(cam, "offset", desplazar, 0.04)
+			intensidad *= 0.8 # Decaimiento de la intensidad
+
+		tween.tween_property(cam, "offset", Vector2.ZERO, 0.04)

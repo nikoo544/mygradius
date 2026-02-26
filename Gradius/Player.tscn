@@ -11,21 +11,48 @@ size = Vector2(99, 31)
 
 [node name="Player" type="CharacterBody2D" unique_id=1000438231]
 collision_mask = 7
+motion_mode = 1
 script = ExtResource("1_qfadh")
 bala_escena = ExtResource("2_f3yu6")
 
+[node name="ThrustParticles" type="CPUParticles2D" parent="."]
+position = Vector2(-50, 0)
+emitting = false
+amount = 20
+lifetime = 0.5
+direction = Vector2(-1, 0)
+spread = 20.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 100.0
+initial_velocity_max = 200.0
+scale_amount_min = 2.0
+scale_amount_max = 5.0
+color = Color(0, 1, 1, 1)
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="Center" type="Marker2D" parent="Spawns"]
+position = Vector2(60, 0)
+
+[node name="LeftWing" type="Marker2D" parent="Spawns"]
+position = Vector2(20, -30)
+
+[node name="RightWing" type="Marker2D" parent="Spawns"]
+position = Vector2(20, 30)
+
 [node name="ColorRect" type="ColorRect" parent="." unique_id=2061978949]
-offset_right = 104.0
-offset_bottom = 40.0
+offset_left = -50.0
+offset_top = -20.0
+offset_right = 54.0
+offset_bottom = 20.0
 color = Color(0.74413097, 0.00046763837, 0.7536527, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=538706531]
-position = Vector2(53, 20)
+position = Vector2(2, 0)
 shape = SubResource("RectangleShape2D_qfadh")
 
 [node name="hitbox" type="Area2D" parent="." unique_id=2027690763]
-position = Vector2(14, 20)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="hitbox" unique_id=246904034]
-position = Vector2(37, -1)
+position = Vector2(2, 0)
 shape = SubResource("RectangleShape2D_f3yu6")

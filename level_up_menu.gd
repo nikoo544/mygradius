@@ -2,11 +2,14 @@ extends ColorRect
 
 # Lista de posibles mejoras (Adaptadas a tu nuevo script de Player)
 var pool_de_mejoras = [
-	{"nombre": "Motores Élite", "desc": "+50 Velocidad de Nave", "tipo": "vel"},
+	{"nombre": "Motores Élite", "desc": "+60 Velocidad de Nave", "tipo": "vel"},
 	{"nombre": "Cañón Secundario", "desc": "Activa Disparo en V\n(Múltiples proyectiles)", "tipo": "arma_tipo2"},
 	{"nombre": "Lanzamisiles", "desc": "Activa proyectiles\npesados y lentos", "tipo": "arma_misil"},
-	{"nombre": "Placas de Titanio", "desc": "+30 Vida Máx y cura 20 HP", "tipo": "vida"},
-	{"nombre": "Sobrecarga Eléctrica", "desc": "+15% Velocidad de disparo\npara todas las armas", "tipo": "cadencia"}
+	{"nombre": "Placas de Titanio", "desc": "+40 Vida Máx y cura 20 HP", "tipo": "vida"},
+	{"nombre": "Sobrecarga Eléctrica", "desc": "+20% Velocidad de disparo\npara todas las armas", "tipo": "cadencia"},
+	{"nombre": "Kit de Reparación", "desc": "Cura 50 HP", "tipo": "cura"},
+	{"nombre": "Mente Analítica", "desc": "+25% Experiencia ganada", "tipo": "multi_xp"},
+	{"nombre": "Escudo de Energía", "desc": "Activa un escudo que\nabsorbe 50 de daño", "tipo": "escudo"}
 ]
 
 @onready var contenedor = $HBoxContainer 
@@ -15,12 +18,21 @@ func _ready():
 	# Nos aseguramos de que procese aunque el árbol esté pausado
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
+	Events.level_up.connect(_on_level_up)
+
+func _on_level_up(_level):
+	visible = true
+	generar_opciones()
 
 func generar_opciones():
+	# Asegurar que ocupe toda la pantalla
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	pivot_offset = size / 2.0
+
 	# -- GAME FEEL: Animación de entrada del menú --
 	scale = Vector2(0.8, 0.8) # Empieza un poco pequeño
 	modulate.a = 0.0 # Empieza transparente
-	var tween_menu = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	var tween_menu = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	tween_menu.tween_property(self, "scale", Vector2(1.0, 1.0), 0.3)
 	tween_menu.parallel().tween_property(self, "modulate:a", 1.0, 0.2)
 	
@@ -28,12 +40,30 @@ func generar_opciones():
 	for child in contenedor.get_children():
 		child.queue_free()
 	
+	var jugador = get_tree().get_first_node_in_group("jugador")
+	if not jugador:
+		visible = false
+		get_tree().paused = false
+		return
+
 	pool_de_mejoras.shuffle()
 	
-	var num_opciones = min(3, pool_de_mejoras.size())
+	var opciones_filtradas = []
+	for m in pool_de_mejoras:
+		# Accedemos de forma segura a las propiedades del jugador
+		var modo_actual = jugador.get("modo_disparo_actual")
+
+		# Evitamos ofrecer mejoras que ya tenemos al máximo o activas
+		if m["tipo"] == "arma_tipo2" and modo_actual == 1: # TIPO_2
+			continue
+		if m["tipo"] == "arma_misil" and modo_actual == 2: # MISIL
+			continue
+		opciones_filtradas.append(m)
+
+	var num_opciones = min(3, opciones_filtradas.size())
 	
 	for i in range(num_opciones):
-		var mejora = pool_de_mejoras[i]
+		var mejora = opciones_filtradas[i]
 		var boton = Button.new()
 		
 		# Configuramos el texto
@@ -68,25 +98,34 @@ func _aplicar_mejora(mejora):
 	match mejora["tipo"]:
 		"vel": 
 			jugador.velocidad_actual += 50
+			Events.speed_changed.emit(jugador.velocidad_actual)
 		"arma_tipo2": 
 			# Cambiamos al nuevo disparo del enum
 			jugador.modo_disparo_actual = jugador.TipoDisparo.TIPO_2
+			Events.weapon_switched.emit("TYPE 2 (SPREAD)")
 		"arma_misil": 
 			# Cambiamos al misil del enum
 			jugador.modo_disparo_actual = jugador.TipoDisparo.MISIL
+			Events.weapon_switched.emit("MISSILE")
 		"vida": 
-			jugador.vida_max += 30
+			jugador.vida_max += 40
 			jugador.vida_actual = min(jugador.vida_actual + 20, jugador.vida_max) # Evita pasarse del máximo
 		"cadencia": 
 			# Aceleramos todas las armas principales
-			jugador.cadencia_disparo_tipo1 *= 0.85
-			jugador.cadencia_disparo_tipo2 *= 0.85
-			jugador.cadencia_misil *= 0.85
+			jugador.cadencia_disparo_tipo1 *= 0.80
+			jugador.cadencia_disparo_tipo2 *= 0.80
+			jugador.cadencia_misil *= 0.80
+		"cura":
+			jugador.vida_actual = min(jugador.vida_actual + 50, jugador.vida_max)
+		"multi_xp":
+			jugador.multiplicador_xp += 0.25
+		"escudo":
+			jugador.escudo_activo = true
+			jugador.vida_escudo = 50
+			jugador.modulate = Color.SKY_BLUE
 	
-	# Actualizar UI
-	if jugador.hp_bar:
-		jugador.hp_bar.max_value = jugador.vida_max
-		jugador.hp_bar.value = jugador.vida_actual
+	# Actualizar UI vía Eventos
+	Events.hp_changed.emit(jugador.vida_actual, jugador.vida_max)
 	
 	# -- GAME FEEL: Animación de salida antes de quitar la pausa --
 	var tween_salida = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)

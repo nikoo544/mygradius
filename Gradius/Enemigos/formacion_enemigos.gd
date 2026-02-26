@@ -10,6 +10,7 @@ func _ready():
 
 func spawn_escuadron():
 	for i in range(cantidad_enemigos):
+		if not enemigo_escena: return
 		var nuevo_enemigo = enemigo_escena.instantiate()
 		# Lo añadimos como hijo del PATH2D para que siga la curva
 		$Path2D.add_child(nuevo_enemigo)

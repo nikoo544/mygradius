@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Gradius/Enemigos/enemy_shielded.gd" id="1_shielded"]
+[ext_resource type="PackedScene" uid="uid://do80gjsnp0kot" path="res://Gradius/Particulas/Explosion.tscn" id="2_xl2r8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(60, 60)
+
+[node name="EnemyShielded" type="Area2D" groups=["enemigos"]]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_shielded")
+explosion_escena = ExtResource("2_xl2r8")
+vida = 40
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = -30.0
+offset_top = -30.0
+offset_right = 30.0
+offset_bottom = 30.0
+color = Color(0.2, 0.5, 0.8, 1)
+
+[node name="ShieldVisual" type="ColorRect" parent="."]
+offset_left = -35.0
+offset_top = -35.0
+offset_right = 35.0
+offset_bottom = 35.0
+color = Color(0, 1, 1, 0.2)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")

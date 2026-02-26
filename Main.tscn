@@ -9,6 +9,17 @@
 [ext_resource type="Texture2D" uid="uid://b3hqeiy7c0y6a" path="res://img/blue-stars.png" id="6_3dxm6"]
 [ext_resource type="PackedScene" uid="uid://dg0i45a1u0e65" path="res://Gradius/Enemigos/FormacionEnemigos.tscn" id="7_trn2v"]
 [ext_resource type="Script" uid="uid://b4255q6q7h2ee" path="res://level_up_menu.gd" id="9_03owx"]
+[ext_resource type="Script" path="res://hud.gd" id="10_hud"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyKamikaze.tscn" id="11_kamikaze"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemySniper.tscn" id="12_sniper"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyBurst.tscn" id="13_burst"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyOrbiter.tscn" id="14_orbiter"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyCarrier.tscn" id="15_carrier"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyShielded.tscn" id="16_shielded"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemySine.tscn" id="17_sine"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyZigZag.tscn" id="18_zigzag"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/Asteroid.tscn" id="19_asteroid"]
+[ext_resource type="PackedScene" path="res://Gradius/Enemigos/EnemyBoss.tscn" id="20_boss"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cm0pq"]
 size = Vector2(88, 1355.5)
@@ -19,37 +30,19 @@ size = Vector2(2921, 81)
 [node name="Main" type="Node2D" unique_id=212487968]
 script = ExtResource("1_r0du0")
 enemigo_escena = ExtResource("4_cm0pq")
+pool_enemigos = Array[PackedScene]([ExtResource("4_cm0pq"), ExtResource("11_kamikaze"), ExtResource("12_sniper"), ExtResource("13_burst"), ExtResource("14_orbiter"), ExtResource("15_carrier"), ExtResource("16_shielded"), ExtResource("17_sine"), ExtResource("18_zigzag"), ExtResource("19_asteroid")])
+boss_escena = ExtResource("20_boss")
 
-[node name="StaticBody2D" type="StaticBody2D" parent="." unique_id=1692384896]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D" unique_id=786992939]
-position = Vector2(-1242, 65)
-shape = SubResource("RectangleShape2D_cm0pq")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="StaticBody2D" unique_id=1894078844]
-position = Vector2(1395, 21)
-shape = SubResource("RectangleShape2D_cm0pq")
-
-[node name="CollisionShape2D3" type="CollisionShape2D" parent="StaticBody2D" unique_id=1662151828]
-position = Vector2(-46, -709)
-shape = SubResource("RectangleShape2D_fos0i")
-
-[node name="CollisionShape2D4" type="CollisionShape2D" parent="StaticBody2D" unique_id=593211986]
-position = Vector2(179, 796)
-shape = SubResource("RectangleShape2D_fos0i")
 
 [node name="SpawnTimer" type="Timer" parent="." unique_id=1728854941]
 autostart = true
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=712180714]
-position = Vector2(70, 47)
-scale = Vector2(9.718551, 6.31845)
-zoom = Vector2(0.5, 0.5)
-position_smoothing_enabled = true
-
 [node name="Player" parent="." unique_id=1000438231 groups=["jugador"] instance=ExtResource("3_r0du0")]
 position = Vector2(-813, -84)
 explosion_escena = ExtResource("4_trn2v")
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=712180714]
+zoom = Vector2(0.7, 0.7)
 
 [node name="PowerUp" parent="." unique_id=440221382 instance=ExtResource("4_fos0i")]
 position = Vector2(708, -87)
@@ -81,28 +74,30 @@ position = Vector2(-319, -418)
 scale = Vector2(1.0305326, 1.0614369)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=420139250]
-scale = Vector2(2, 2)
-transform = Transform2D(2, 0, 0, 2, 0, 0)
 
 [node name="Control" type="Control" parent="CanvasLayer" unique_id=1277601693]
+script = ExtResource("10_hud")
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
+scale = Vector2(1.5, 1.5)
 
 [node name="XPBar" type="ProgressBar" parent="CanvasLayer/Control" unique_id=1644658794]
 layout_mode = 0
-offset_left = 528.0
-offset_top = 287.0
-offset_right = 532.0
-offset_bottom = 314.0
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 640.0
+offset_bottom = 80.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 
 [node name="HealthBar" type="ProgressBar" parent="CanvasLayer/Control" unique_id=179058588]
 layout_mode = 0
-offset_left = 432.5
-offset_top = 287.0
-offset_right = 436.5
-offset_bottom = 314.0
+offset_left = 40.0
+offset_top = 100.0
+offset_right = 640.0
+offset_bottom = 140.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 
 [node name="Trinkets" type="Label" parent="CanvasLayer/Control" unique_id=727728238]
 layout_mode = 0
@@ -111,61 +106,132 @@ offset_top = 269.0
 offset_right = 375.0
 offset_bottom = 292.0
 
-[node name="GameOverMenu" type="ColorRect" parent="CanvasLayer" unique_id=354956412]
-process_mode = 3
-visible = false
-offset_left = -1102.0
-offset_top = -598.0
-offset_right = 1095.0
-offset_bottom = 654.0
-color = Color(0, 0, 0, 0.58431375)
+[node name="BottomBar" type="Panel" parent="CanvasLayer"]
+custom_minimum_size = Vector2(0, 100)
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
 
-[node name="Label" type="Label" parent="CanvasLayer/GameOverMenu" unique_id=1091283760]
-visible = false
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-text = "GAME OVER"
-
-[node name="Button" type="Button" parent="CanvasLayer/GameOverMenu" unique_id=215237639]
-visible = false
-layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
-text = "REINTENTAR"
-
-[node name="LevelUpMenu" type="ColorRect" parent="CanvasLayer" unique_id=760013494]
-process_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -319.5
-offset_top = -198.5
-offset_right = -319.5
-offset_bottom = -198.5
+[node name="HBox" type="HBoxContainer" parent="CanvasLayer/BottomBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-color = Color(0, 0, 0, 0.54901963)
-script = ExtResource("9_03owx")
+theme_override_constants/separation = 50
+alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/LevelUpMenu" unique_id=924121945]
+[node name="AvatarSpace" type="Panel" parent="CanvasLayer/BottomBar/HBox"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Label" type="Label" parent="CanvasLayer/BottomBar/HBox/AvatarSpace"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -154.5
-offset_top = -154.0
-offset_right = -154.5
-offset_bottom = -154.0
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.6, 0.6)
+text = "PILOT"
+horizontal_alignment = 1
+
+[node name="VBoxStats" type="VBoxContainer" parent="CanvasLayer/BottomBar/HBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="CanvasLayer/BottomBar/HBox/VBoxStats"]
+layout_mode = 2
+text = "SCORE: 0"
+
+[node name="SpeedLabel" type="Label" parent="CanvasLayer/BottomBar/HBox/VBoxStats"]
+layout_mode = 2
+text = "SPEED: 850"
+
+[node name="VBoxWeapon" type="VBoxContainer" parent="CanvasLayer/BottomBar/HBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="WeaponTitle" type="Label" parent="CanvasLayer/BottomBar/HBox/VBoxWeapon"]
+layout_mode = 2
+text = "ACTIVE WEAPON"
+horizontal_alignment = 1
+
+[node name="WeaponName" type="Label" parent="CanvasLayer/BottomBar/HBox/VBoxWeapon"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+text = "TYPE 1"
+horizontal_alignment = 1
+
+[node name="GameOverMenu" type="ColorRect" parent="CanvasLayer" unique_id=354956412]
+process_mode = 3
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.58431375)
+
+[node name="Label" type="Label" parent="CanvasLayer/GameOverMenu" unique_id=1091283760]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -46.5
+offset_top = -33.0
+offset_right = 46.5
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "GAME OVER"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="CanvasLayer/GameOverMenu" unique_id=215237639]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -49.5
+offset_top = 10.0
+offset_right = 49.5
+offset_bottom = 41.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "REINTENTAR"
+
+[node name="LevelUpMenu" type="ColorRect" parent="CanvasLayer" unique_id=760013494]
+process_mode = 3
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.54901963)
+script = ExtResource("9_03owx")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/LevelUpMenu" unique_id=924121945]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 20
 alignment = 1
 
